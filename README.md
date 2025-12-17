@@ -2,7 +2,7 @@
 
 **Your Blackboard, but better.**
 
-GoodBoard extension transforms the legacy Blackboard experience into a modern, high-performance productivity hub for UVM students. Built with React and Vite, it launches a dedicated Dashboard page featuring a drag-and-drop Kanban board for assignment tracking, interactive Gantt charts for timeline visualization, and real-time grade analytics. It seamlessly integrates with the existing backend while providing a superior, dark-mode-enabled user interface.
+GoodBoard transforms the legacy Blackboard experience into a modern, high-performance productivity hub for UVM students. Built with React and Vite, it launches a dedicated Dashboard page featuring a drag-and-drop Kanban board for assignment tracking, interactive Gantt charts for timeline visualization, and real-time grade analytics. It empowers students with advanced data visualization tools, including dynamic charts for grade distribution and progress tracking.
 
 ## Key Features
 
