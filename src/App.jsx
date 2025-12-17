@@ -2604,7 +2604,7 @@ const SettingsView = () => {
                             <p>GoodBoard v1.0.0</p>
                             <p>Desarrollado para mejorar la experiencia de Blackboard UVM.</p>
                             <div className="mt-2 flex gap-4">
-                                <a href="#" className="text-primary hover:underline">GitHub</a>
+                                <a href="https://github.com/Dexterpol-A21/goodBoard" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">GitHub</a>
                             </div>
                         </div>
                     </div>
