@@ -1,0 +1,200 @@
+.rubricInlineEdit > div {
+	left: 15px;
+}
+
+  #collabRubricList {
+    float:none;
+    margin: 0 10px;
+    color:#666666;
+    width:auto;
+    font-size:11px;
+
+  }
+  #collabRubricList .collabRubricListType{
+        margin: 0 10px;
+
+  }
+
+  #collabRubricList .columnPalette {
+    padding:5px 8px;
+    line-height:20px;
+    -webkit-box-sizing:border-box;
+    -moz-box-sizing:border-box;
+    box-sizing: border-box; 
+    
+  }
+  
+  #collabRubricList .columnPalette.selected {
+    background-color: #c7e8f1;
+  border: 1px solid #b9e2ed;
+  border-bottom: none;
+  }
+  
+ #collabRubricList .paletteGroup, .columnPalette {
+border-top:1px dashed #b9e2ed;}
+
+
+  #collabRubricList .columnPalette h4 {margin:0; padding:0;}
+
+  #collabRubricList .columnPalette .itemHead,
+  #collabRubricList .columnPalette .itemHeadOpen {
+    background: none;
+    display: block;
+    padding: 0;
+    text-decoration: underline;
+  
+    font-family: "Lucida Grande";
+    font-weight: 600;
+}
+
+  #collabRubricList .genericButtonImg {
+    position:relative;
+  }
+  /* overkill, but i wanted to retain the bg gradient applied to .genericButtonImg */
+  #collabRubricList .genericButtonImg:after {
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    right:0; 
+    bottom:0;
+    background:url('/images/ci/ng/small_new_window.gif') no-repeat center center;
+  }
+
+  #collabRubricList .genericButtonImg > img {
+    opacity:0;
+    filter: alpha(opacity=0);
+  }
+
+  .showOnRubricGrade .button-4 {
+    margin:0;
+    float:none;
+  }
+
+  .showOnRubricGrade {
+    text-indent:15px;
+    position: relative;
+    -moz-box-sizing:border-box;
+    -webkit-box-sizing:border-box;
+    box-sizing:border-box;
+    margin:0 10px 10px 10px;
+    border:1px solid #b9e2ed;
+    /* text-indent positions text "Rubric is loading". since .showOnRubricGrade is not hidden by .js 
+    when the rubric is closed, we can't use padding. the "loading" text is the only text directed embedded in this div
+    all other text appears in child divs. we could use text-align:center, but would need a similar override below; */
+  }
+
+  .showOnRubricGrade > div {
+    text-indent:0;
+  }
+
+  .rubricControlContainer {
+    padding-top:3px;
+  }
+
+  .rubricGradingList > .u_controlsWrapper {
+    padding:12px 15px;
+    text-indent:0;
+    color: #03718f;
+  }
+
+  .rubricGradingRow {
+    padding:6px 15px 12px;
+    text-indent:0;
+  }
+
+  .rubricGradingComments {padding:12px 15px 66px;}
+
+  .showOnRubricGrade > h3 {display:none;}
+
+  .showOnRubricGrade .taskbuttondiv {display:none;}
+
+  .showOnRubricGrade .rubricGradingComments + .taskbuttondiv {
+    display:block;
+    padding:12px 15px 18px;
+    position:absolute;
+    bottom:0;
+    left:0;
+    right:0;
+    z-index:10;
+  } 
+
+  .rubricGradingList h4 {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* styles for the badges that appear in each row */
+  .rubricGradingList h4 span {
+    -moz-border-radius:2px;
+    -webkit-border-radius:2px;
+    border-radius:2px;
+    line-height:1.2;
+    background:#f9f9f9;
+    color:#555;
+    top:9px;
+  }
+  .rubricGradingList h4 .rangePercent {
+    top:0;
+  }
+
+  .rubricGradingList .rubricRowPoints {
+    background-color: #DEF0F4;
+    font-weight: bold;
+    color: #4D4D4D;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+#collabRubricList .collabRubricListTypeContainer  {
+  /* height:30px; */
+  /* line-height:30px; */
+  margin:0 6px;
+}
+
+#collabRubricList h4{
+  margin-top:5px;
+}
+
+.rubricGradingComments .editableFeedback textarea {
+    width:100%;
+    border:1px solid #b9e2ed;
+}
+.rubricGradingComments .editableFeedback div.vtbe_footer {
+    background:none;
+    border:none;
+  }
+
+.rubricGradingTotalPoints, 
+.rubricGradingOverride {
+  display: inline-block;
+  margin:0;
+  padding:12px 15px 0;
+  border-top: 1px solid #b9e2ed;
+  font-weight:bold;
+  font-size:100%;
+}
+
+.rubricGradingOverride {
+  border:none;
+  padding:0 15px 12px;
+}
+
+.rubricGradingComments .editor {margin:0;}
+
+#collabRubricList a.itemHead {
+  text-shadow:none;
+}
+
+#collabRubricList .warnFont{
+  display: inline-block;
+  font-size: 11px;
+  background-color: #fff;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=70)";
+  -moz-opacity: .7;
+  -o-opacity: .7;
+  -khtml-opacity: .7;
+  opacity: .7;
+  padding: 6px;
+}
+

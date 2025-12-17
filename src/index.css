@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Palette: Productivity Gold (High Contrast Dark Mode) */
+  --color-primary: #FFC107; /* GoodYellow */
+  --color-primary-hover: #FFD54F;
+  
+  --color-bg-dark: #121212; /* Deep dark background */
+  --color-bg-card: #1E1E1E; /* Slightly lighter for cards */
+  --color-bg-column: #2C2C2C; /* For Kanban columns */
+  
+  --color-text-main: #FFFFFF;
+  --color-text-muted: #B0B0B0;
+  --color-border: #333333;
+
+  /* Typography */
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg-dark);
+  color: var(--color-text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #121212; 
+}
+::-webkit-scrollbar-thumb {
+  background: #333333; 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FFC107; 
+}
+

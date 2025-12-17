@@ -1,0 +1,447 @@
+var mygrades =
+{};
+
+mygrades.showComment = function( e, object, comment, parentType, type, rightJustify )
+{
+  Event.stop( e );
+  mygrades.hideComment();
+  var leftOffset, topOffset;
+  if ( comment && !comment.empty() )
+  {
+    if ( type != "over" )
+    {
+      leftOffset = object.offsetLeft;
+      topOffset = object.offsetTop;
+      var theCell = mygrades.getParentByType( object, parentType );
+      if ( !theCell )
+      {
+        theCell = object;
+      }
+      leftOffset += theCell.offsetLeft;
+      topOffset += theCell.offsetTop;
+      var theTable = mygrades.getParentByType( object, 'TABLE' );
+      if ( theTable )
+      {
+        leftOffset += theTable.offsetLeft + 10;
+        topOffset += theTable.offsetTop + 10;
+      }
+    }
+    else
+    {
+      leftOffset = object.offsetLeft + 10;
+      topOffset = object.offsetTop + 10;
+      if ( navigator.userAgent.toLowerCase().indexOf( "msie" ) >= 0 )
+      {
+        leftOffset += object.parentNode.offsetLeft + object.parentNode.parentNode.parentNode.parentNode.offsetLeft;
+        topOffset += object.parentNode.offsetTop + object.parentNode.parentNode.parentNode.parentNode.offsetTop;
+      }
+    }
+
+    $( 'commentDivText' ).update( comment );
+  }
+  var commentDiv = $( "commentDiv" );
+  if ( comment && !comment.empty() )
+  {
+    commentDiv.style.top = topOffset + "px";
+    commentDiv.style.left = leftOffset + "px";
+    commentDiv.style.display = "block";
+  }
+  return false;
+};
+
+mygrades.hideComment = function()
+{
+  if ( $( "commentDiv" ) )
+  {
+    $( "commentDiv" ).style.display = "none";
+  }
+};
+
+mygrades.getParentByType = function( obj, type )
+{
+  while ( obj && obj.tagName != type )
+  {
+    obj = obj.parentNode;
+  }
+  return obj;
+};
+
+mygrades.setBehavior = function()
+{
+  $( 'containerdiv' ).style.position = 'relative'; // so that the positioning
+  // is to not off
+  document.body.onclick = mygrades.hideComment;
+};
+
+/*
+ * Reload the 'content' frame with the given url
+ */
+mygrades.loadContentFrame = function( url )
+{
+
+  if (window.matchMedia("(max-width: 736px)").matches) {
+    $j('.stream-item').each(function(streamItem){
+      streamItem.on('click',function(){
+        $j('right_stream_mygrades').addClassName( 'show_right_stream_mobile' );
+        $j('streamHeader_mygrades').addClassName( 'show_close_stream_button' );
+      });
+    });
+
+    
+    $j('streamHeader_mygrades').on('click',function(){
+      $j('myBbCourseRiskTracker').removeClassName( 'show_right_stream_mobile' );
+      $j('streamHeader_mygrades').removeClassName( 'show_close_stream_button' );
+    });
+  }
+  
+  if (!page.util.insideUltra()) 
+  {
+    top.location = url;
+  } 
+  else
+  { 
+    window.location = url;
+  }
+  return false;
+};
+
+mygrades.getGradeAvatar = function( se, isForOverview )
+{
+  if ( !Event.KEY_ENTER )
+  {
+    Event.KEY_ENTER = 13;
+  }
+  if ( se.extraAttribs && se.extraAttribs.grd_grade )
+  {
+    var gradeExtraAttribs = se.extraAttribs.grd_grade.evalJSON();
+    if ( gradeExtraAttribs.grade_icon || gradeExtraAttribs.grade )
+    {
+      var viewMsg = "";
+      var ov = new Element( "div" );
+      ov.addClassName( "grade-value-wrapper u_floatThis-left");
+      var av = new Element( "div" );
+      av.addClassName( "grade-value" );
+      av.setAttribute("tabindex","0");
+      if ( isForOverview )
+      {
+        ov.addClassName( "hidden-grade" );
+        av.addClassName( "hidden-grade" );
+        viewMsg = "<span class='hidden-msg'>" + page.bundle.getString( "mygrades.overview.view_grade" ) + "</span>";
+        av.observe( 'keydown', function( event )
+        {
+          if ( ( event.keyCode || event.which ) == Event.KEY_ENTER )
+          {
+            page.util.fireClick( av );
+          }
+        });
+      }
+
+
+      // NOTE: images/icons here and inside grade.jspf need to be kept in sync since both display the same icons
+      if ( gradeExtraAttribs.grade_icon )
+      {
+        var colName = gradeExtraAttribs.name;
+        var imgSrc = null;
+        var altText;
+        var gradeShown = gradeExtraAttribs.grade;
+        var large = '';
+        var imgClass = '';
+        if (!gradeShown || gradeShown == '-' || gradeShown === '')
+        {
+          gradeShown = '';
+          large = '_large';
+          imgClass = 'largeIcon';
+        }
+        else
+        {
+          imgClass = 'badgeIcon';
+        }
+        if ( gradeExtraAttribs.grade_icon == 'completed' )
+        {
+          gradeShown = ''; // Special case: For completed never show the grade, just the icon
+          imgSrc = '/images/ci/gradebook/grade_completed_large.png';
+          imgClass = 'largeIcon';
+          altText = page.bundle.getString( "mygrades.gradebook.completed", colName );
+        }
+        else if ( gradeExtraAttribs.grade_icon == 'needs_grading' )
+        {
+          imgSrc = '/images/ci/gradebook/needs_grading'+large+'.png';
+          altText = page.bundle.getString( "instructor.spreadsheet.icon.legend.needs.grading", colName );
+        }
+        else if ( gradeExtraAttribs.grade_icon == 'in_progress' )
+        {
+          imgSrc = '/images/ci/gradebook/grading_in_progress'+large+'.png';
+          altText = page.bundle.getString( "instructor.spreadsheet.icon.legend.attempt.in.progress", colName );
+        }
+        else if ( gradeExtraAttribs.grade_icon == 'exempt' )
+        {
+          imgSrc = '/images/ci/gradebook/exempt'+large+'.png';
+          altText = page.bundle.getString( "instructor.spreadsheet.icon.exempt.grade", colName );
+        }
+        if ( imgSrc !== null )
+        {
+          altText = altText.replace( /'/g, '&#39;' ).replace( /"/g, '&quot;' );
+          var imgHtml = "<img src='" + imgSrc + "' class='"+imgClass+"' alt='" + altText + "' title='" + altText + "' border='0'>";
+          if (imgClass == 'badgeIcon')
+          {
+            av.innerHTML = viewMsg + gradeShown + imgHtml;
+          }
+          else
+          {
+            av.innerHTML = viewMsg + imgHtml + gradeShown;
+          }
+        }
+      }
+      else
+      {
+        av.innerHTML = viewMsg + gradeExtraAttribs.grade;
+      }
+      ov.appendChild(av);
+      return ov;
+    }
+  }
+  return null;
+};
+
+mygrades.initSort = function()
+{
+  UserDataDWRFacade.getStringPermScope( "mygrades.sortBy", function( lastSortBy )
+  {
+    var sortBy = lastSortBy ? lastSortBy : "sortByPosition";
+    $$( 'select#sortby option' ).each( function( option ) {
+      option.selected = sortBy == option.value;
+    });
+    mygrades.sort( sortBy, false );
+  });
+};
+
+mygrades.sort = function( sortBy, persist )
+{
+  var rowsWrapper = $( 'grades_wrapper' );
+  if ( rowsWrapper )
+  {
+    var rows = $$( 'div.sortable_item_row' );
+    // sort
+    var sortByFunction = mygrades.sortByPosition;
+    switch( sortBy )
+    {
+      case "sortByDueDateLatestFirst" :
+        sortByFunction = mygrades.sortByDueDateLatestFirst;
+        break;
+      case "sortByDueDateOldestFirst" :
+        sortByFunction = mygrades.sortByDueDateOldestFirst;
+        break;
+      case "sortByLastActivity" :
+        sortByFunction = mygrades.sortByLastActivity;
+        break;
+      default :
+   }
+    rows.sort( sortByFunction );
+    // remove all rows
+    rows.each( function( row ){ Element.remove( row ); });
+    // put sorted rows back
+    rows.each( function( row ){ rowsWrapper.appendChild ( row ); });
+  }
+
+  // persist user preference on sortBy
+  if ( persist )
+  {
+    UserDataDWRFacade.setStringPermScope( "mygrades.sortBy", sortBy );
+  }
+
+  mygrades.updateRowIndice();
+};
+
+mygrades.sortByDueDateLatestFirst = function( rowA, rowB )
+{
+  return mygrades.sortByDueDate( rowA, rowB, true );
+};
+
+mygrades.sortByDueDateOldestFirst = function( rowA, rowB )
+{
+  return mygrades.sortByDueDate( rowA, rowB, false );
+};
+
+mygrades.sortByDueDate = function( rowA, rowB, isLatestFirst )
+{
+  // due date comparison
+  var dueDateA = rowA.getAttribute( 'duedate' );
+  var dueDateB = rowB.getAttribute( 'duedate' );
+  var dueDateDiff = dueDateA - dueDateB;
+  if( isLatestFirst )
+  {
+    dueDateDiff = -dueDateDiff; // reverse order
+  }
+  // fall back to position comparison in case of a tie
+  return dueDateDiff === 0 ? mygrades.sortByPosition( rowA, rowB ) : dueDateDiff;
+};
+
+mygrades.sortByLastActivity = function( rowA, rowB )
+{
+  // last activity comparison
+  var lastActivityA = rowA.getAttribute( 'lastactivity' );
+  var lastActivityB = rowB.getAttribute( 'lastactivity' );
+  var lastActivityDiff = lastActivityB - lastActivityA; // reverse order
+  //fall back to position comparison in case of a tie
+  return lastActivityDiff === 0 ? mygrades.sortByPosition( rowA, rowB ) : lastActivityDiff;
+};
+
+mygrades.sortByPosition = function( rowA, rowB )
+{
+  // position comparison
+  var positionA = rowA.getAttribute( 'position' );
+  var positionB = rowB.getAttribute( 'position' );
+  return positionA - positionB;
+};
+
+mygrades.filter = function( filterBy, persist )
+{
+  // hide all rows first and show rows by filter type later
+  $$( 'div.sortable_item_row' ).each( function( row ){ Element.hide( row ); });
+  switch ( filterBy)
+  {
+    case 'G': // filter by Graded
+      $$( 'div.graded_item_row' ).each( function( row ){ Element.show( row ); });
+      Element.hide( $( 'submissionReceipts' ) );
+      break;
+    case 'U': // filter by Upcoming
+      $$( 'div.upcoming_item_row' ).each( function( row ){ Element.show( row ); });
+      Element.hide( $( 'submissionReceipts' ) );
+      break;
+    case 'S': // filter by Submitted
+      $$( 'div.submitted_item_row' ).each( function( row ){ Element.show( row ); });
+      Element.show( $( 'submissionReceipts' ) );
+      break;
+    default: // filter by All (default)
+      $$( 'div.sortable_item_row' ).each( function( row ){ Element.show( row ); });
+      Element.hide( $( 'submissionReceipts' ) );
+      break;
+  }
+
+  // persist user preference on filterBy
+  if ( persist )
+  {
+    UserDataDWRFacade.setStringPermScope( "mygrades.filterBy", filterBy );
+  }
+
+  // highlight filterBy tab
+  $$( 'ul#filterby a' ).each( function( anchor )
+  {
+    if ( filterBy == anchor.getAttribute( 'value' ) )
+    {
+      anchor.addClassName( 'active' );
+    }
+    else
+    {
+      anchor.removeClassName( 'active' );
+    }
+  } );
+
+  mygrades.updateRowIndice();
+};
+
+mygrades.initFilter = function()
+{
+  UserDataDWRFacade.getStringPermScope( "mygrades.filterBy", function( lastFilterBy )
+  {
+    var filterBy = lastFilterBy ? lastFilterBy : "A";
+    mygrades.filter( filterBy, false );
+  });
+};
+
+mygrades.initAll = function()
+{
+  mygrades.initSort();
+  mygrades.initFilter();
+  mygrades.registerEventToShowHideButtons();
+};
+
+// This function add or update the attribute 'rowIndex' from 1 to n
+// for each visible row and the rowIndex is used for QA ONLY
+mygrades.updateRowIndice = function()
+{
+  var rowIndex = 0;
+  $$( 'div.sortable_item_row' ).each( function( row )
+  {
+    if ( Element.visible( row ) )
+    {
+      // add or update rowIndex
+      row.setAttribute( "rowIndex", ++rowIndex );
+    }
+    else
+    {
+      // remove rowIndex attribute
+      row.removeAttribute( "rowIndex" );
+    }
+  } );
+};
+
+// Mostly copied from message_tree.js TODO: make generic and put somewhere common
+mygrades.registerEventToShowHideButtons = function()
+{
+  var elem = $( 'grades_wrapper' );
+
+  if ( navigator.userAgent.indexOf("Trident/5") > -1 )
+  { // IE9 .. Note : focus/blur events don't get triggered in IE9 if its Document Mode is not set to IE9 standards
+    elem.onfocusin = mygrades.showHideButtons.bindAsEventListener( this, 'show' );
+    elem.onfocusout = mygrades.showHideButtons.bindAsEventListener( this, 'hide' );
+  }
+  else if ( elem.addEventListener )
+  { // Chrome, FF, Safari
+    elem.addEventListener( 'focus', mygrades.showHideButtons.bindAsEventListener( this, 'show' ), true );
+    elem.addEventListener( 'blur', mygrades.showHideButtons.bindAsEventListener( this, 'hide' ), true );
+  }
+  else if ( elem.attachEvent )
+  { // IE8
+    elem.attachEvent( 'onfocus', mygrades.showHideButtons.bindAsEventListener( this, 'show' ) );
+    elem.attachEvent( 'onblur', mygrades.showHideButtons.bindAsEventListener( this, 'hide' ) );
+  }
+};
+
+mygrades.showHideButtons = function( event, showOrHide )
+{
+  function fakeHover( elemToShowOrHide, showOrHide )
+  {
+    if( showOrHide === 'show' )
+    {
+      elemToShowOrHide.addClassName('simHover');
+    }
+    else if( showOrHide === 'hide' )
+    {
+      elemToShowOrHide.removeClassName('simHover');
+    }
+  }
+
+  if( showOrHide !== 'show' && showOrHide !== 'hide' )
+  {
+    return;
+  }
+  var theTarget = event.target ? event.target : event.srcElement;
+  if ( theTarget )
+  {
+    var msgWrapperDiv = theTarget.up( 'div.row' );
+    if( undefined !== msgWrapperDiv && null !== msgWrapperDiv )
+    {
+      fakeHover(msgWrapperDiv, showOrHide);
+    }
+  }
+};
+
+mygrades.showInLightBox = function( theTitle, theContent, focusOnClose )
+{
+  var theLightbox = new lightbox.Lightbox(
+  {
+    defaultDimensions :
+    {
+      w : 400,
+      h : 100
+    },
+    useDefaultDimensionsAsMinimumSize : true,
+    verticalBorder : 125,
+    horizontalBorder : 125,
+    title : theTitle,
+    contents : '<div class="container">' + theContent + '</div>',
+    focusOnClose : focusOnClose
+  } );
+  theLightbox.open();
+};

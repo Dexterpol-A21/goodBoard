@@ -1,0 +1,291 @@
+
+<!-- saved from url=(0218)https://uvm.rest.pod-6.us-east-1.prod.class.com/v1/lti-launch/learn-auth-done?learn_url=https%3A%2F%2Fuvmonline.blackboard.com%2F&code=rqNBgOUj5w9mdXESv71JAA0jqu7ucAed&state=1024da48-578a-4c92-b96b-257bbe6c2615%3Ben-US -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>Class for Zoom Integration</title>
+    <script type="application/javascript">
+        // Verify that we're in the integration iframe
+        if (!window.parent) {
+            throw new Error('Not within iframe');
+        }
+
+        // These come in from the Handlebars template parameters
+        const learnUrl = 'https://uvmonline.blackboard.com/';
+        const token = 'YTdeS2LqHH3gEeiZ0hDyvfibaLELybPA';
+        const userId = 'f1a4cfb7f2c84c6a9417a6de1143ebdb';
+        const assetsUrl = 'https://uvm.class.com';
+        const linkName = 'Launch Class';
+        const schoolName = 'uvm';
+        const environment = 'prod';
+        const uefid = `${environment}-${schoolName}`;
+        // This is the LTI placement in Learn that will be launched. This must be configured as a Course tool!
+        const ltiPlacementHandle = 'class-course-content-placement';
+
+        const integrationHost = new URL(learnUrl).origin;
+
+        let messageChannel;
+        let modalId;
+
+        const UefEvents = {
+            click: 'click',
+            route: 'route',
+            integration: {
+                hello: 'integration:hello'
+            },
+            authorization: {
+                authorize: 'authorization:authorize'
+            },
+            portal: {
+                panelResponse: 'portal:panel:response',
+                modalResponse: 'portal:modal:response',
+                modalClose: 'portal:modal:close',
+                callback: 'portal:callback',
+                render: 'portal:render',
+                new: 'portal:new',
+                remove: 'portal:remove',
+                panel: 'portal:panel'
+            },
+            event: {
+                event: 'event:event',
+                subscribe: 'event:subscribe'
+            },
+            course: {
+                detailRegister: 'course:detail:register'
+            }
+        }
+
+        // Set up the window.postMessage listener for the integration handshake
+        window.addEventListener('message', onPostMessageReceived, false);
+
+        // Send the integration handshake message to Learn Ultra. This notifies
+        // Learn Ultra that the integration has loaded and is ready to communicate.
+        window.parent.postMessage({ type: UefEvents.integration.hello }, integrationHost);
+
+        function onPostMessageReceived(evt) {
+            // Do some basic message validation.
+            const fromTrustedHost = evt.origin === integrationHost;
+            if (!fromTrustedHost || !evt.data || !evt.data.type) {
+                return;
+            }
+
+            if (evt.data.type === UefEvents.integration.hello) {
+                // Store the MessageChannel port for future use
+                messageChannel = new LoggedMessageChannel(evt.ports[0]);
+                messageChannel.onmessage = onMessageFromUltra;
+
+                // Now, we need to authorize with Learn Ultra using the OAuth2 token that the server negotiated for us
+                messageChannel.postMessage({
+                    type: UefEvents.authorization.authorize,
+                    token: token
+                });
+            }
+        }
+
+        function onMessageFromUltra(message) {
+            if (message.data.type === UefEvents.authorization.authorize) {
+                // Learn has responded to the handshake - authorization is completed
+                onAuthorizedWithUltra();
+            }
+
+            if (message.data.type === UefEvents.portal.panelResponse) {
+                renderPanelContents(message);
+            }
+
+            if (message.data.type === UefEvents.portal.modalResponse) {
+                modalId = message.data.modalId;
+            }
+
+            if (message.data.type === UefEvents.portal.callback) {
+                switch (message.data.callbackId) {
+                    case 'modal-popup-close':
+                        messageChannel.postMessage({
+                            type: UefEvents.portal.modalClose,
+                            modalId,
+                        });
+                        break;
+                    case 'course-details-launch-class':
+                        openPanel('full', 'Class', localStorage.getItem('context'));
+                        break;
+                }
+            }
+
+            if (message.data.type === UefEvents.event.event) {
+                eventUltraMessageReceived(message);
+            }
+        }
+
+        function renderPanelContents(message) {
+            if (message.data.correlationId === 'panel-2') {
+                const contentsToSendLti = {
+                    tag: 'LtiLaunch',
+                    props: {
+                        handle: ltiPlacementHandle,
+                        style: {
+                            width: '100%',
+                            height: '100%',
+                        },
+                    }
+                }
+
+                messageChannel.postMessage({
+                    type: UefEvents.portal.render,
+                    portalId: message.data.portalId,
+                    contents: contentsToSendLti
+                });
+            }
+        }
+
+        function onAuthorizedWithUltra() {
+            messageChannel.postMessage({
+                type: 'event:subscribe',
+                subscriptions: [UefEvents.click, UefEvents.route, UefEvents.portal.new, UefEvents.portal.remove],
+            });
+
+            messageChannel.postMessage({
+                type: UefEvents.course.detailRegister,
+                registrationName: `${uefid}-class-integration`,
+            });
+        }
+
+        function eventUltraMessageReceived(msg) {
+            if (msg.data.eventType === UefEvents.portal.new && msg.data.selector === 'course.outline.details') {
+                showCourseDetails(msg.data.portalId);
+
+            }
+        }
+
+        function openPanel(panelSize, panelTitle, data) {
+            localStorage.setItem('context', data);
+            localStorage.setItem('action', 'SHOW_PANEL');
+
+            messageChannel.postMessage({
+                type: UefEvents.portal.panel,
+                correlationId: 'panel-2',
+                panelType: panelSize,
+                panelTitle: panelTitle,
+                attributes: {
+                    onClose: {
+                        callbackId: 'panel-2-close',
+                    },
+                },
+            });
+        }
+
+        function createCourseNavButton(options) {
+            const linkName = options.linkName;
+            const titleName = options.titleName;
+            const callbackId = options.callbackId;
+            const iconSrc = options.iconSrc;
+            const iconAlt = options.iconAlt || 'Class Logo';
+
+            return {
+                tag: 'button',
+                props: {
+                    className: 'uef--button--course-details',
+                    onClick: {
+                        callbackId,
+                        mode: 'sync',
+                    }
+                },
+                children: [
+                    {
+                        tag: 'div',
+                        props: {
+                            className: 'uef--course-details--image'
+                        },
+                        children: [
+                            {
+                                tag: 'img',
+                                props: {
+                                    alt: iconAlt,
+                                    src: iconSrc,
+                                    height: 24,
+                                    width: 24
+                                },
+                            }
+                        ]
+                    },
+                    {
+                        tag: 'div',
+                        props: {
+                            className: 'uef--course-details--element'
+                        },
+                        children: [
+                            {
+                                tag: 'div',
+                                props: {
+                                    className: 'uef--course-details--name'
+                                },
+                                children: titleName
+                            },
+                            {
+                                tag: 'div',
+                                props: {
+                                    className: 'uef--course-details--content'
+                                },
+                                children: [
+                                    {
+                                        tag: 'div',
+                                        props: {
+                                            className: 'uef--course-details--link'
+                                        },
+                                        children: linkName
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            };
+        }
+
+        // The following shows the launch point in the left nav of the course. 
+        // The callbackId: course-details-click is where the action happens.
+        function showCourseDetails(portalId) {
+            messageChannel.postMessage({
+                type: UefEvents.portal.render,
+                portalId: portalId,
+                contents: {
+                    tag: 'div',
+                    props: {
+                        className: 'uef--course-details--container',
+                        style: {
+                            flexDirection: 'column'
+                        }
+                    },
+                    children: [
+                        // Create buttons inside the course navigation. There can be multiple buttons.
+                        createCourseNavButton({
+                            callbackId: 'course-details-launch-class',
+                            titleName: 'Class',
+                            linkName,
+                            iconSrc: `${assetsUrl}/images/class-logo-black.svg`
+                        })
+                    ]
+                }
+            });
+        }
+
+        class LoggedMessageChannel {
+            constructor(messageChannel) {
+                this.messageChannel = messageChannel;
+                this.messageChannel.onmessage = this.onMessage;
+            }
+
+            onMessage = (evt) => {
+                console.log(`[Class UEF ${uefid}] From Learn Ultra:`, evt.data);
+                this.onmessage(evt);
+            };
+
+            postMessage = (msg) => {
+                console.log(`[Class UEF ${uefid}] To Learn Ultra`, msg);
+                this.messageChannel.postMessage(msg);
+            }
+        }
+    </script>
+<style type="text/css"></style></head>
+<body>
+    Integration has loaded.
+
+
+</body></html>

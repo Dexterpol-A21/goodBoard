@@ -1,0 +1,809 @@
+if (!window.tinyMceWrapper)
+{
+  //this is tinyMCE delegate
+  var tinyMceWrapper = {};
+  var vtbeUtil = {};
+
+  tinyMceWrapper.editors = new Hash();
+  tinyMceWrapper.currentEditorId = null;
+  tinyMceWrapper.eventRegistered = false;
+  tinyMceWrapper.bbFPHLst = [];
+  tinyMceWrapper.changeFocusOnMoreClick = new Hash();
+
+  tinyMceWrapper.Editor = Class.create();
+
+  var editors_initialized = false;
+}
+
+tinyMceWrapper.Editor.prototype =
+{
+    initialize : function( fieldName, config, isLegacy, fullScreenMode )
+    {
+      this._fullScreenMode = false;
+
+      //Check if the editor is already present, then remove/destroy the existing editor before creating one.
+      var delayTime = 1.1;
+      if ( tinyMceWrapper.editors.get( fieldName ) && !fullScreenMode )
+      {
+        var edTemp = tinyMceWrapper.editors.get( fieldName )._tinyMceEditor;
+        edTemp.remove();
+        edTemp.destroy();
+        delayTime = 1.5;
+      }
+
+      this._isIE = navigator.userAgent.toLowerCase().indexOf( "msie" ) >= 0;
+      this._isSafari = navigator.userAgent.toLowerCase().indexOf( "safari" ) >= 0;
+
+      //set to true when the tinyMce is rendered.
+      this._tinyMceRendered = false;
+      //Call the finalize method after rendering.
+      this._callFinalize = false;
+      this._isSpellCheckOnly = config.isSpellCheckOnly;
+
+      this._toolbarVisible = false;
+      this._config = config;
+      this._fieldName = fieldName;
+      this._isLegacy = isLegacy;
+
+      // Setup MathType Editor
+      if ( config.hasOwnProperty( 'external_plugins') && config.external_plugins.hasOwnProperty( 'tiny_mce_wiris') )
+      {
+        config.mathTypeParameters = {
+            serviceProviderProperties : {
+                URI : '/webapps/vtbe-tinymce/app/configurationjs',
+                server : 'java'
+            }
+        };
+      }
+
+      this._textArea = $(fieldName);
+      //fix LRN-53839 Display horizontal scrollbar in full screen when it is resized.
+      if ( !fullScreenMode )
+      {
+        tinyMceWrapper.editors.set( fieldName, this );
+        config.selector = '#' + fieldName;
+        config.content_css = config.content_css.split(',');
+        var fullConfig = this.initializeConfig( config );
+        this.createTinyMceEditor.delay( delayTime, fieldName, fullConfig, this );
+      }
+      else
+      {
+        tinyMceWrapper.toolBars = ["simple_buttons","full_buttons1","full_buttons2","full_buttons3","full_buttons4"];
+        tinyMceWrapper.editors.set( "mce_fullscreen", this );
+      }
+      // Since we just added something to tinyMceWrapper.editors, reset editors_initialized so we will recreate editors in the next initEditors call
+      editors_initialized = false;
+      //back-compatiblity
+
+      Element.addMethods(
+      {
+        getHTML : function( element )
+        {
+          return element.innerHTML;
+        }
+      });
+    },
+    createTinyMceEditor : function( fieldName, fullConfig, tinyMceWrapperEditor )
+    {
+      // Initializes an editor instance.
+      tinymce.init( fullConfig );
+
+      tinyMceWrapper.editors.set( fieldName, tinyMceWrapperEditor );
+      // Since we just added something to tinyMceWrapper.editors, reset editors_initialized so we will recreate editors in the next initEditors call
+      editors_initialized = false;
+
+      // Add the fieldName to editor instance mapping to the TinyMceWrapper.
+      tinyMceWrapper.editors.get( fieldName )._tinyMceEditor = tinyMCE.get( fieldName );
+
+      if (window.callbackOnTinyMceEditorCreated && typeof ( window.callbackOnTinyMceEditorCreated ) == "function")
+        {
+          window.callbackOnTinyMceEditorCreated();
+        }
+    },
+    getTinyMceEditor : function ( )
+    {
+      return this._tinyMceEditor;
+    },
+    initializeConfig : function( config )
+    {
+      var fullConfig = {};
+      // default settings
+      fullConfig.menubar = false;
+      var toolbarMode = 'sliding';
+      fullConfig.toolbar_mode = toolbarMode;
+      fullConfig.mobile = {
+        toolbar_mode: toolbarMode
+      };
+
+      fullConfig.convert_urls = false;
+      fullConfig.mode = "textareas";
+      fullConfig.cleanup = true; //( this._isLegacy === true );
+      fullConfig.verify_html = false;
+      //fix LRN-54891 as per EPHOX team suggestion.
+      fullConfig.extended_valid_elements = "-span[*],-strong[*],-em[*],-sub[*],-sup[*],-a[*],#td[colspan|rowspan|width|height|align|valign|bgcolor|background|bordercolor|scope|style|id],#th[colspan|rowspan|width|height|align|valign|scope|style|id]";
+      // <font/> being non standard HTML4 element, TinyMCE manipulates the content when it is contained within <pre/> tag that messes
+      // up the HTML content. Hence, the workaround to skip that manipulation. See LRN-45716 for details.
+      fullConfig.valid_children = "+pre[font]";
+      fullConfig.paste_retain_style_properties = "all";
+      fullConfig.setup = "tinyMceSetup" ;
+      // Allow link and meta tag within the TinyMCE body tag
+      fullConfig.valid_children = '+body[link|meta]';
+      // Allow Javascript URLs in Anchors and Imgs
+      fullConfig.allow_script_urls = true;
+      // Allow title attribute in Images
+      fullConfig.image_title = true;
+      //pass the following settings as objects NOT strings. Suggested by EPHOX.
+      fullConfig.powerpaste_word_import = {retain_style_properties: 'valid', strip_class_attributes: 'mso'};
+      fullConfig.powerpaste_html_import = {retain_style_properties: 'valid', strip_class_attributes: 'mso'};
+      // Disallow images embedded in external documents, such as Word, from being pasted into TinyMCE.
+      fullConfig.powerpaste_allow_local_images = false;
+      fullConfig.content_security_policy = "script-src https:";
+      //See LRN-79863, also see EPHOX ticket: https://support.ephox.com/requests/5235
+      //By the following setting set to true, it won't allow the browser to insert images with base64 in the text editor.
+      // no longer supported in Tiny 5.0 -> fullConfig.powerpaste_strip_base64_images = true;
+      fullConfig.paste_preprocess = function(plugin, args) {
+        if ( fullConfig.isSpellCheckOnly && bbConvertHtmlToPlainText )
+        {
+          // Convert pasted content to plain text
+          var plainText = bbConvertHtmlToPlainText( args.content, false );
+          args.content = plainText;
+        }
+      };
+      fullConfig.init_instance_callback = function(editor) {
+        // This is called from tinyMce Editor
+        tinyMceWrapper.editors.get( editor.editorId ).registryEvent( editor );
+        var editorId = editor.id;
+        tinyMceWrapper.changeFocusOnMoreClick.set(editorId, false);
+        // Add LEARN specific styling
+        $j(editor.contentDocument.body).addClass( 'vtbegenerated mceContentBody');
+        var tinyTextBoxTable = editor.iframeElement.closest('.textboxtable');
+        tinyTextBoxTable.id = editor.id + '_tbl';
+
+        // Set VTBE full width of the page./
+        var tinyTextBoxTableFieldParent = $j( tinyTextBoxTable ).closest( 'div.field' );
+        if ( tinyTextBoxTableFieldParent.length == 1 )
+        {
+          // Override TinyMCE's parent div.field style attribute width to 100%.  This could not be done
+          // via CSS selector because it is not possible to override shared.css's 'div.field' css selector to
+          // not apply the 79% percent restriction to all div.field except if its child element is a TinyMCE.
+          tinyTextBoxTableFieldParent.css( 'width', '100%' );
+        }
+
+        //Refresh lightBox with the current content size
+        tinyMceWrapper.lightBoxRefresh();
+
+        // Add 'Media' context menu option for Media links (e.g. Audio and Video)
+        editor.ui.registry.addContextMenu('media', {
+          update: function(node)
+          {
+            if ( editor.dom.getParent( node, '*[data-mce-object]' ) !== null ||
+                 node.parentElement.getAttribute("data-ephox-embed-iri" ) !== null )
+            {
+              // Enable the 'Media' contextual menu item only if the audio/video tag found at the current level.
+              var siblings = node.parentElement.childNodes;
+              for ( var siblingIndex = 0; siblingIndex < siblings.length; siblingIndex++ )
+              {
+                var sibling = siblings[ siblingIndex ];
+                var attributeValueToCheck = sibling.tagName.toLowerCase();
+                if ( attributeValueToCheck === 'img' && sibling.getAttribute( "data-mce-object" ) )
+                {
+                  attributeValueToCheck = sibling.getAttribute( "data-mce-object" ).toLowerCase();
+                }
+                else if ( attributeValueToCheck === 'iframe' )
+                {
+                  attributeValueToCheck = node.parentElement.parentElement
+                    .getAttribute("bb-embedded-type");
+                  attributeValueToCheck = attributeValueToCheck ? attributeValueToCheck.toLowerCase() : attributeValueToCheck;
+                }
+                if ( attributeValueToCheck === 'video' || attributeValueToCheck === 'audio' ||
+                     attributeValueToCheck === 'slideshare' || attributeValueToCheck === 'youtube' )
+                {
+                  return 'media';
+                }
+              }
+            }
+            return '';
+          }
+        });
+
+        editor.ui.registry.addContextMenu( 'link',
+        {
+          update : function( node )
+          {
+            // Only show the 'link' context menu item if the tag isn't <img>, <video>, nor <audio>.
+            // because those tags can't have a link added around them as that will cause problems with rendering file-type specific context menus.
+            return node.tagName.toLowerCase() !== 'img' && node.tagName.toLowerCase() !== 'video' && node.parentElement.getAttribute("data-ephox-embed-iri") === null &&
+                   node.tagName.toLowerCase() !== 'audio' && editor.dom.getParent(node, '*[data-mce-object]') === null ? 'link unlink' : '';
+          }
+        } );
+
+        editor.ui.registry.addContextMenu('image', {
+          update: function(node)
+          {
+            var returnValue = ''; // empty string means do not show the 'image' context menu item.
+
+            // Only show the 'image' context menu for image tags.  Note, TinyMCE in edit mode,
+            // renders videos using the image tag with a data attribute of 'data-mce-object'.  To
+            // filter out videos, we exclude image tags with that attribute.
+            if (node.tagName.toLowerCase() === 'img' && editor.dom.getParent(node, '*[data-mce-object]') === null )
+            {
+              // Ensure image tags have height and width attributes specified before rendering the "Insert/edit Image" dialog.
+              var nodeHeight = node.getAttribute("height");
+              if (nodeHeight === null || nodeHeight === '')
+              {
+                node.setAttribute("height", node.height);
+              }
+              var nodeWidth = node.getAttribute("width");
+              if (nodeWidth === null || nodeWidth === '')
+              {
+                node.setAttribute("width", node.width);
+              }
+              returnValue = 'image';
+              if (node.getAttribute('class') === 'Wirisformula')
+              {
+                // Add MathType to contextmenu
+                returnValue += ' tiny_mce_wiris_formulaEditor';
+              }
+            }
+            return returnValue;
+          }
+        });
+
+        // Determine whether to expand the VTBE toolbar.
+        if ( tinyMceWrapper.hasMoreButton( editor ) )
+        {
+          tinyMceWrapper.initMoreButton( editor );
+        }
+
+        tinyMceWrapper.initForE2eTests( editor );
+
+        // Hide the Institution logo when in FullScreen mode.
+        editor.on('FullscreenStateChanged', function (e) {
+          var bannerImgs = $$( '.brandingImgWrap .bannerImage' );
+          var navBar = $$( '.global-nav-bar-wrap' );
+          hideOrShowFirstElement(bannerImgs, !e.state);
+          hideOrShowFirstElement(navBar, !e.state);
+
+          function hideOrShowFirstElement ( elements, visible ) {
+            if ( !elements || elements.length === 0 )
+            {
+              return;
+            }
+            var element = elements[0];
+            if ( visible )
+            {
+              element.show();
+            }
+            else
+            {
+              element.hide();
+            }
+          }
+        });
+      };
+      for(var setting in config )
+      {
+        if ( config.hasOwnProperty( setting ) )
+        {
+          fullConfig[setting] = config[setting];
+        }
+      }
+      return fullConfig;
+    },
+
+    setupForFullScreen : function ( editorId )
+    {
+      var tw = tinyMceWrapper.editors.get( editorId ) ;
+      if ( tw )
+      {
+        tw.getTinyMceEditor().remove();
+      }
+      new tinyMceWrapper.Editor( this._fieldName, this._config, this._isLegacy, true );
+    },
+    finalizeEditor : function()
+    {
+      if ( this._tinyMceRendered )
+      {
+        // checked the bug, it still exists in all browsers, so we need the fix.
+        try
+        {
+          var content = this._tinyMceEditor.getContent().trim();
+          var newContent = BrowserSpecific.handleFirefoxPastedLinksBug( this._tinyMceEditor.documentBaseURI.getURI(),
+                                                                        content );
+          if ( newContent != content )
+          {
+            this._tinyMceEditor.setContent( newContent );
+          }
+          this._tinyMceEditor.save();
+        }
+        catch ( e )
+        {
+          // ignore
+        }
+      }
+      else
+      {
+        // Call this method after the tinyMce is Rendered
+        this._callFinalize = true;
+      }
+    },
+    focusEditor : function()
+    {
+      this._tinyMceEditor.focus();
+    },
+    registryEvent: function ( editor )
+    {
+      this._tinyMceRendered = true;
+      var em = $( editor.editorId + "_ifr" );
+      if ( !tinyMceWrapper.eventRegistered )
+      {
+        tinyMceWrapper.eventRegistered = true;
+      }
+
+      if ( this._isIE ) //For IE need to add click and focus for the iFrame
+      {
+        Event.observe( em, 'click', this.handleFocus.bindAsEventListener( this ) );
+      }
+      if ( em.contentDocument )
+      {
+        Event.observe( em.contentDocument, 'focus', this.handleFocus.bindAsEventListener( this ) );
+      }
+      //Sometime registerOnChangeCallback is called before the render is done. So it is a hack to fix this issue.
+      if ( this._onChangeExtraFun )
+      {
+        this._onChangeExtraValue = this._onChangeExtraFun( $( editor.editorId + "_ifr" ) );
+      }
+
+      //Calling the finalize method
+      if ( this._callFinalize === true )
+      {
+        this.finalizeEditor();
+      }
+    },
+    finalizeEditorsAnyChange : function( callback )
+    {
+      var orig = this._textArea.value.trim();
+      this.finalizeEditor();
+      var mod = this._textArea.value.trim();
+      if ( orig != mod )
+      {
+        // Special case where we start out with nothing but the vtbe is adding a &nbsp; on us... ignore it.
+        if ( !( orig === '' && mod == '&nbsp;' ) )
+        {
+          if ( typeof ( callback ) == "function" )
+          {
+            callback( $( this._fieldName + "_ifr" ) );
+          }
+        }
+      }
+    },
+    registerOnChangeCallback : function( callback, extraCallback )
+    {
+      this._onChangeCallback = callback;
+      this._onChangeExtraFun = extraCallback;
+      //Sometime this method is called before the tinyMce is rendered. So checking if the tinyMce is rendered.
+      if ( $( this._fieldName + "_ifr" ) !== null && this._onChangeExtraFun)
+      {
+        this._onChangeExtraValue = this._onChangeExtraFun( $( this._fieldName + "_ifr" ) );
+      }
+      if ( this._tinyMceEditor && this._tinyMceEditor.onKeyUp && this._tinyMceEditor.onKeyUp.add )
+      {
+        this._tinyMceEditor.onKeyUp.add( function( editor, e, callback, extraCallback )
+        {
+          var tinyMceWrapper = window.tinyMceWrapper.editors.get( editor.editorId );
+          if ( tinyMceWrapper._onChangeCallback !== null )
+          {
+            tinyMceWrapper.finalizeEditor();
+            tinyMceWrapper._onChangeCallback( $( editor.editorId + "_ifr" ), tinyMceWrapper._onChangeExtraValue );
+          }
+        } );
+      }
+    },
+    handleFocus : function( e )
+    {
+      this.focusEditor();
+      tinyMceWrapper.currentEditorId = this._fieldName;
+      this._textArea.previousElementSibling.style.display="block"; //display VTBE help text
+    },
+    destory : function ()
+    {
+      this.destroyEditor();
+    },
+    destroyEditor : function ()
+    {
+      if ( tinyMceWrapper.editors.get( this._fieldName ) )
+      {
+        tinyMceWrapper.editors.unset( this._fieldName );
+        // Since we just removed something from tinyMceWrapper.editors, reset editors_initialized so we will recreate editors in the next initEditors call
+        editors_initialized = false;
+      }
+      if ( tinyMceWrapper.currentEditorId == this._fieldName )
+      {
+        tinyMceWrapper.currentEditorId = null;
+      }
+    },
+    /* Called from the pickers to insert HTML*/
+    insertHTML : function ( html )
+    {
+      tinyMCE.execCommand('mceInsertContent', false,  html );
+    },
+    replaceHTML : function( html )
+    {
+      //sometimes this methoed is called before tinymce is rendered.
+      // so setting the value to filed first.
+      // fix race condition in chrome and safari browsers.
+      $( this._fieldName ).value = html;
+      if ( this._tinyMceRendered )
+      {
+        this._tinyMceEditor.setContent( html );
+      }
+    },
+    /* back compatibility */
+    regenerateIframe : function( html )
+    {
+      this.replaceHTML(html);
+    },
+    getHTML : function()
+    {
+      return this.getTinyMceEditor().getContent();
+    }
+
+};
+
+tinyMceWrapper.lightBoxRefresh = function()
+{
+  if( lightbox && lightbox.getCurrentLightbox() )
+  {
+    page.util.refreshPinBottomSubmitStep();
+  }
+};
+
+tinyMceWrapper.getEditor = function( fieldName )
+{
+  return tinyMceWrapper.editors.get( fieldName );
+};
+
+tinyMceWrapper.getEditorIdFromIframe = function( vtbeIFrame )
+{
+  var vtbeIFrameId = vtbeIFrame.id;
+  var editorId = vtbeIFrameId.substr( 0, vtbeIFrameId.indexOf( "_ifr" ) );
+  return editorId;
+};
+
+tinyMceWrapper.shouldChangeFocus = function( component )
+{
+  var bbComponentId = component.element.dom.id;
+  var bbEditorId = bbComponentId.substr( 0, bbComponentId.length - 16 );
+  return ( tinyMceWrapper.changeFocusOnMoreClick.get( bbEditorId ) === true );
+};
+
+tinyMceWrapper.hasMoreButton = function( editor )
+{
+  return ( $j(editor.editorContainer).find( '.tox-toolbar__overflow--open' ).length == 1 ||
+    $j(editor.editorContainer).find( '.tox-toolbar__overflow--closed' ).children().length > 0 );
+};
+
+tinyMceWrapper.initMoreButton = function( editor )
+{
+  var toolbarOverlord = $j(editor.editorContainer).find('.tox-toolbar-overlord');
+  var moreButtonToolbar =  toolbarOverlord.find('.tox-toolbar__primary');
+  var moreButtonToolbarChildren = moreButtonToolbar.children();
+  if ( moreButtonToolbarChildren )
+  {
+    var moreButton = moreButtonToolbarChildren.last().find('button');
+    if ( moreButton.length === 1 )
+    {
+      // VTBE's toolbar has the 'More...' button, which can be used to expand or
+      // collapse all rows below the first one.
+      tinyMceWrapper.editors.get( editor.id ).getTinyMceEditor().moreButton = moreButton;
+      // Get the vtbe_display_type via Ajax call only once when the global tinyMceWrapper.vtbe_display_type_synced
+      // not set yet.
+      if ( typeof tinyMceWrapper.vtbe_display_type_synced === 'undefined' )
+      {
+        UserDataDWRFacade.getStringPermScope( "vtbe_display_type", function( displayType )
+        {
+          // Ajax call to check user preferences to see whether to expand or collapse the toolbar.
+          if ( displayType !== 'S' && displayType !== "" )
+          {
+            // Toolbar should be expanded, so simulate a click. By default, the toolbar is collapsed upon loading.
+            moreButton.trigger( "click", [ undefined, undefined, true ] );
+          }
+        } );
+      }
+
+      /**
+       * Event handler for when VTBE's 'More...' toolbar button is clicked.
+       *
+       * When the button clicked:
+       *   1) toggle VTBE toolbar to either expanded or collapsed.
+       *   2) send an AJAX call to LEARN to persist the toggle state.
+       *   3) expand/collapse toolbars of other VTBEs on the current screen.
+       */
+      moreButton.on( 'click', function( event, isExpandToolBarOnly, editorId, isSimulatingMoreClickOnPageLoad )
+      {
+        var toolbarOverflow = toolbarOverlord.find('.tox-toolbar__overflow');
+        if ( toolbarOverflow.length === 0 )
+        {
+          // Does not have the "More..." button, then exit, e.g. Spellchecker mode
+          return;
+        }
+
+        if (typeof isExpandToolBarOnly === 'undefined' && typeof isSimulatingMoreClickOnPageLoad === 'undefined' )
+        {
+          // Ajax call to persist the expand/collapse state in user preference.
+          if ( toolbarOverflow.hasClass( 'tox-toolbar__overflow--closed') )
+          {
+            UserDataDWRFacade.setStringPermScope( "vtbe_display_type", "F" );
+          }
+          else
+          {
+            UserDataDWRFacade.setStringPermScope( "vtbe_display_type", "S" );
+          }
+        }
+        if (typeof isExpandToolBarOnly === 'undefined' && typeof isSimulatingMoreClickOnPageLoad === 'undefined' )
+        {
+          // Sync with toolbars of other TinyMCEs on the same page.
+          var editorLst = tinyMceWrapper.editors.keys();
+          for ( var i = 0; i < editorLst.length; i++ )
+          {
+            var edId = editorLst[ i ];
+            if ( editorId === edId )
+            {
+              continue;
+            }
+            var currentTinyMceWrapper  = tinyMceWrapper.editors.get( edId );
+            if ( currentTinyMceWrapper._tinyMceEditor.moreButton )
+            {
+              if ( this.isSameNode( currentTinyMceWrapper._tinyMceEditor.moreButton[0] ) )
+              {
+                if ( typeof editorId === 'undefined' )
+                {
+                  tinyMceWrapper.changeFocusOnMoreClick.set(edId, true);
+                  currentTinyMceWrapper._tinyMceEditor.moreButton.trigger('focus');
+                }
+                continue;
+              }
+              // Synchronizing expanding/collapsing the toolbar for other VTBEs on the page, triggered
+              // by user clicking the "More" button in one of the VTBEs.  Passing in 'true'
+              // to the click event to indicate that this is a programmatic click,
+              // as opposed to a user click, so that we only expand/collapse the toolbar (for this VTBE),
+              // but do not update the user preference nor notify other VTBEs on the page.
+              tinyMceWrapper.changeFocusOnMoreClick.set(edId, false);
+              currentTinyMceWrapper._tinyMceEditor.moreButton.trigger( 'click', [ true, edId, isSimulatingMoreClickOnPageLoad ] );
+            }
+          }
+         }
+      });
+    }
+  }
+};
+
+/**
+ * Add DOM element ids for E2E tests to use to locate TinyMCE sub-components.  TinyMCE 3.5 used to add ids to
+ * VTBE components, but stopped doing so in TinyMCE 5.
+ */
+tinyMceWrapper.initForE2eTests = function ( editor )
+{
+    var toxTinyMCE = editor.iframeElement.closest('.tox-tinymce');
+    if (toxTinyMCE)
+    {
+      var statusBarWordCount = toxTinyMCE.querySelector( '.tox-statusbar__wordcount');
+      if ( statusBarWordCount )
+      {
+        statusBarWordCount.id = editor.id + '-word-count';
+      }
+      var statusBarPath = toxTinyMCE.querySelector( '.tox-statusbar__path');
+      if ( statusBarPath )
+      {
+        statusBarPath.id = editor.id + '_path_row';
+      }
+      var overflowToolbar = toxTinyMCE.querySelector( '.tox-toolbar__overflow');
+      if ( overflowToolbar )
+      {
+        overflowToolbar.id = editor.id + '_overflowToolbar';
+      }
+    }
+};
+
+/*Called when the mashup code */
+tinyMceWrapper.setMashupData = function( htmlToInsert )
+{
+  tinyMCE.execCommand('mceInsertContent', false,  htmlToInsert.replace(/<div(\b[^>]*)>\s*?<!--([\w\W]*?)-->\s*?<\/div>/gi, "<div$1><!--$2-->&nbsp;<\/div>") );
+  tinyMCE.execCommand('InsertLineBreak', false );
+};
+
+tinyMceWrapper.restoreMes = function( editorId, text )
+{
+  tinyMceWrapper.editors.get( editorId ).replaceHTML( text );
+};
+
+// back compatibility
+function finalizeEditors()
+{
+  var execCommandArgs = {skip_focus: true};
+  tinyMceWrapper.editors.each( function( pair )
+  {
+    // When submitting page, remove Spell Check Markup before finalizing each editor's content.
+    // Executing the command "clearSpellCheckMarkUp" should occur here rather than in finalizeEditor() because
+    // finalizeEditor() is called every time there is a click within the window while finalizeEditors() is only called when the page is submitted.
+    if ( pair.value._tinyMceEditor && pair.value._tinyMceRendered )
+    {
+      pair.value._tinyMceEditor.execCommand('clearSpellCheckMarkUp', null, null, execCommandArgs);
+    }
+
+    pair.value.finalizeEditor();
+  } );
+}
+
+function finalizeEditorsAnyChange( callback )
+{
+  tinyMceWrapper.editors.each( function( pair )
+  {
+    pair.value.finalizeEditorsAnyChange( callback );
+  } );
+}
+
+// This method will setup an onchange callback for all vtbe editors on the page.
+// The extraCallback method is optional.  If passed it will be called with the
+// iframe of each editor and is expected to return something to pass to the
+// callback method on each change.  This is an optimization step to make each
+// call to the callback faster as it won't have to figure out which vtbe on the
+// page it is for its onchange purposes (see assessment.js, .jsp for details)
+// The callback method will be called on each change within the vtbe with two
+// parameters: the iframe of the editor and anything returned by the extracallback
+// for the editor being changed
+function registerOnChangeCallback( callback, extraCallback )
+{
+  tinyMceWrapper.editors.each( function( pair )
+  {
+    pair.value.registerOnChangeCallback( callback, extraCallback );
+  } );
+}
+
+function initEditors()
+{
+  if ( !editors_initialized )
+  {
+    editors = tinyMceWrapper.editors.toObject();
+    editors_initialized = true;
+  }
+}
+
+function tinyMceSetup( editor )
+{
+  try
+  {
+    editor.editorId = editor.id;
+	var tw = tinyMceWrapper.editors.get( editor.id );
+    tw._tinyMceEditor = editor;
+    this._fieldName = editor.editorId;
+  }
+  catch ( e )
+  {
+    //ignore
+  }
+}
+
+/**
+ * This called to display the lightbox, which will have a VTBE in it.
+ *
+ * @param content           The content to be displayed in the VTBE
+ * @param title             The title of the Light Box
+ * @param vtbeLightboxUrl   The Lightbox url
+ * @param callback          The function to call back after the light box is submitted
+ * @param callbackParams    Extra parameters that need to be send back while calling the "callback" function
+ * @param isSpellcheckOnly  Specify if the vtbe to be displayed should be spell check only
+ * @param reuseLightbox     If we need to reuse the lightbox, and not open it each time.
+ *
+ * @return if the lightbox was already exists or not
+ */
+vtbeUtil.lightBox = function( content, title, vtbeLightboxUrl, callback, callbackParams, isSpellcheckOnly, reuseLightbox )
+{
+  var openLightBox = ( reuseLightbox === null || reuseLightbox === false ); //Do not reuse the lightbox
+
+  //If we need to openLightbox, if the current lightbox is not found and editor with contenttext not found we need to open the lightbox
+  if ( openLightBox || lightbox.getCurrentLightbox() === null  )
+  {
+    var lightboxParam =
+    {
+        defaultDimensions :
+        {
+            w : 1000,
+            h : 300
+        },
+        ajax :
+        {
+            url : vtbeLightboxUrl,
+            method : 'post',
+            asyn : false,
+            params :
+            {
+              content : content,
+              callback : callback,
+              callbackParams : Object.toJSON( callbackParams ),
+              isSpellcheckOnly : isSpellcheckOnly,
+              reuseLightbox : !openLightBox
+            },
+            loadExternalScripts : true
+        },
+        title : title,
+        closeOnBodyClick : false,
+        showCloseLink : false,
+        contents : content,
+        useDefaultDimensionsAsMinimumSize : true
+    };
+    var lightboxInstance = new lightbox.Lightbox( lightboxParam );
+    lightboxInstance.open();
+    return false;
+  }
+  else
+  {
+    lightbox.getCurrentLightbox().show();
+    return true;
+  }
+};
+
+vtbeUtil.removeAllEditors = function()
+{
+  var vtbeNames = [];
+  tinymce.editors.each( function( e )
+  {
+    vtbeNames.push( e.id );
+  } );
+  vtbeNames.each( function( s )
+  {
+    tinymce.get( s ).remove();
+  } );
+};
+
+vtbeUtil.closeActiveDialogWindow = function()
+{
+  if ( tinymce &&
+       tinymce.activeEditor &&
+       tinymce.activeEditor.windowManager )
+  {
+    tinymce.activeEditor.windowManager.close();
+    vtbeUtil.placeFileLimitWarningDialogOnTopIfNeeded();
+  }
+};
+
+vtbeUtil.displayFileLimitWarningOverDialogWindow = function()
+{
+  if ( tinymce &&
+       tinymce.activeEditor &&
+       tinymce.activeEditor.windowManager )
+  {
+    vtbeUtil.placeFileLimitWarningDialogOnTopIfNeeded();
+  }
+};
+
+/**
+ * Handles the case where the VTBE is shown inside a lightbox and we're showing a max file
+ * upload size exceeded error dialog.  When this occurs, we need to push the error dialog
+ * to the front so that it's not hidden by the lightbox.
+ */
+vtbeUtil.placeFileLimitWarningDialogOnTopIfNeeded = function()
+{ 
+  // Check whether the VTBE is inside a Blackboard lightbox
+  var parentLightBox = $j( '.lb-wrapper' );
+  if ( parentLightBox.length === 0 )
+  { 
+    // Check whether the VTBE is inside one of TinyMCE's lightboxes 
+    parentLightBox = $j( '.tox-tinymce-aux' );
+  }
+  if ( parentLightBox.length > 0 )
+  {
+    // Add Content dialog is inside a lightbox, e.g. inline grading and Quick Comments in Grade
+    // Center.
+    var fileLimitWarnigDialog = $j( '.ui-dialog.bbFileUploadLimitDialogJs' );
+    if ( fileLimitWarnigDialog.length === 1 )
+    {
+      // Push the max file upload size exceeded dialog to the top, so it's not hidden by the lightbox.
+      fileLimitWarnigDialog.css( "z-index", parentLightBox.css( "z-index" ) + 1 );
+      // Push Overlay behind the max file upload size exceeded dialog
+      var widgetOverlay = $j( '.ui-widget-overlay' );
+      widgetOverlay.css( "background", '#aaa' );
+      widgetOverlay.css( "z-index", parentLightBox.css( "z-index" ) );
+    }
+  }
+};

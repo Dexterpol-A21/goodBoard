@@ -1,0 +1,29 @@
+var safeassignGrading =
+{};
+
+safeassignGrading.toggleOnClick = function( targetElementId, anchorId )
+{
+  var targetElement = $( targetElementId );
+  var link = $( anchorId );
+
+  if ( targetElement )
+  {
+    targetElement.toggle();
+
+    if ( link )
+    {
+      if ( targetElement.visible() )
+      {
+        link.addClassName( "expanded" );
+        link.setAttribute( "aria-expanded", "true" );
+      }
+      else
+      {
+        link.removeClassName( "expanded" );
+        link.setAttribute( "aria-expanded", "false" );
+      }
+    }
+  }
+
+  return false;
+};

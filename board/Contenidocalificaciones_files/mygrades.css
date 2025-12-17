@@ -1,0 +1,1356 @@
+/*GRADE TOOL STYLES ONLY*/
+
+.stream-detail-contents {
+    width: 100%;
+}
+
+.detail-heading {
+    min-height: 83px;
+}
+
+.grades-details {
+    margin-right: 0px;
+    margin-left: 0px;
+    font: 400 85% 'Helvetica Neue', "Lucida Grande", sans-serif;
+}
+
+.grades-details div.gradesByDate {
+    margin: 6px 0;
+    clear: both;
+    width: 100%;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.grades-details h3.section-title {
+    clear: both;
+    display: block;
+    float: left;
+    margin: 0;
+    padding: 14px 0 9px;
+    width: 100%;
+    border-bottom: none;
+    color: #949494;
+    /* NOTE: The rest of this style is copied from if_mybb.css for h3.section-title.  It is copied here because the
+    mygrades-by-course view can be displayed both in the stream rhs view AND inside a course where it does not get if_mybb.css 
+    TODO: This should probably go into each theme's css - in which case this b2 needs to provide per-theme css as well.. maybe we can live without that.*/
+    font-weight: 200;
+    font-size: 20px;
+    letter-spacing: 0;
+    position: relative;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, .9);
+    font-family: 'Helvetica Neue', "Lucida Grande", sans-serif;
+    text-transform: uppercase;
+    /*  color: rgba(0, 0, 0, .5); */
+}
+
+.submitted-grades h3.section-title,
+.upcoming-grades h3.section-title {
+    padding-top: 28px;
+}
+
+#outer_left_stream_mygrades_d .stream_item,
+#left_stream_mygrades .stream_item {
+    padding: 18px 15px 20px;
+}
+
+.grade-value-wrapper {
+    position: relative;
+}
+
+.grade-value {
+    font-size: 160%;
+    font-weight: 600;
+    line-height: 165%;
+    color: #000;
+    position: relative;
+    font-family: 'Helvetica Neue', "Lucida Grande", sans-serif;
+    -moz-transition: width .3s ease-in-out, background .3s ease-in-out;
+    -webkit-transition: width .3s ease-in-out, background .3s ease-in-out;
+    transition: width .3s ease-in-out, background .3s ease-in-out;
+    outline: 0;
+}
+
+.grade-value-wrapper img.badgeIcon {
+    padding: 0 3px;
+}
+
+.hidden-grade {
+    -webkit-transition: color .3s ease, opacity .3s ease;
+    -moz-transition: color .3s ease, opacity .3s ease;
+    transition: color .3s ease, opacity .3s ease;
+    z-index: 10;
+    color: transparent;
+}
+
+.hidden-grade .hidden-msg {
+    color: #898273;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, .7);
+    font-size: 20px;
+    font-weight: 200;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    text-transform: uppercase;
+    display: block;
+    position: absolute;
+}
+
+.hidden-grade:hover .hidden-msg,
+.grade-item:hover .hidden-msg,
+.hidden-grade:focus .hidden-msg,
+.grade-item:focus .hidden-msg {
+    color: #E7E5E0;
+    opacity: 0;
+    filter: alpha(opacity="0");
+    color: rgba(255, 255, 255, .15);
+    z-index: -10;
+    -webkit-transition: color .3s ease, z-index .3s ease, opacity .3s ease;
+    -moz-transition: color .35s ease, z-index .3s ease, opacity .3s ease;
+    transition: color .3s ease, z-index .3s ease, opacity .3s ease;
+}
+
+.hidden-grade:hover,
+.hidden-grade:focus {
+    color: #000;
+    text-shadow: none;
+    box-shadow: none;
+}
+
+.hidden-grade img {
+    visibility: hidden;
+}
+
+.hidden-grade:hover img {
+    visibility: visible;
+}
+
+.comText {
+    margin: 0;
+    padding: 8px;
+    font-weight: normal;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    clear: both;
+    /*min-width:240px;*/
+    color: #EFEFEF;
+    opacity: 0.9;
+    filter: alpha(opacity=90);
+    /* For IE8 and earlier */
+    width: auto;
+}
+
+.info {
+    margin-bottom: 6px !important;
+    float: right;
+    top: 3px;
+}
+
+.grade-item {
+    position: relative;
+    clear: both;
+    padding: 0 0 24px
+}
+
+.upcoming-grades .grade-item,
+.submitted-grades .grade-item {
+    border-top: 1px dashed #DBD9D4;
+    background-color: transparent;
+    float: left;
+    width: 100%;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+    border-radius: 0;
+    margin: 0 0 14px;
+    padding: 14px 0 0;
+}
+
+h3.section-title+.grade-item {
+    border-top: 0;
+}
+
+
+/*temporary styles*/
+
+
+/*To be removed after markup change on upcoming grades to make layout consistent with graded items*/
+
+.upcoming-grades .name,
+.upcoming-grades .upcoming,
+.upcoming-grades .not-graded,
+.submitted-grades .name,
+.submitted-grades .upcoming,
+.submitted-grades .not-graded {
+    margin: 0 6px 0 0;
+    padding: 0;
+}
+
+.upcoming-grades .timestamp,
+.submitted-grades .timestamp {
+    margin: 0;
+}
+
+.upcoming-grades .eval-links.horizontal,
+.submitted-grades .eval-links.horizontal {
+    border: none;
+    padding-left: 44px;
+    /*  border-top: 1px solid #ddd; */
+    /*  margin-top: 5px; */
+}
+
+
+/*temporary styles*/
+
+.grade-item .timestamp {
+    color: #777777;
+    right: auto;
+    /* To override the positioning in stream.css for span.timestamp */
+    left: auto;
+    /* To override the positioning in stream.css for span.timestamp*/
+}
+
+.grade-item .name {
+    font-size: 14px;
+    float: left;
+    font-weight: bold;
+    padding-bottom: 6px;
+}
+
+.grade-item .name a {
+    border-bottom: 1px dotted;
+}
+
+.grade-item .name a:hover,
+.grade-item .name a:focus {
+    border-bottom-style: solid;
+}
+
+.grade-label {
+    font-size: 100%;
+    display: block;
+    line-height: 130%;
+    color: #666;
+    font-weight: 200;
+    float: left;
+    position: relative;
+    width: auto;
+    margin-right: 6px;
+}
+
+.gradeCellGrade .grade-label {
+    font-size: 75%;
+    min-width: 60px;
+    top: 6px;
+}
+
+
+/*BEGIN INSTRUCTOR FEEDBACK*/
+
+.gb_feedback {
+    padding: 24px 0 24px 36px;
+    font: 14px/1.4 Georgia, serif;
+}
+
+.gb_feedback:before {
+    color: #CCC;
+    content: '\201C';
+    font-size: 400%;
+    font-weight: bold;
+    line-height: 0;
+    position: relative;
+    top: 19px;
+    left: -35px;
+}
+
+
+/*END INSTRUCTOR FEEDBACK*/
+
+
+/*BEGIN EVAL LINKS (View Comments, Rubric, etc) */
+
+.eval-links {
+    font-weight: 500;
+    font-size: 80%;
+    clear: both;
+    display: block;
+}
+
+.eval-links.horizontal {
+    background-color: transparent;
+    /*  border: 1px solid #DDDDDD; */
+    /*  clear: both; */
+    display: block;
+    /*  float: left; */
+    font-weight: normal;
+    width: 100%;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.eval-links.horizontal input {
+    /*  float: left; */
+    display: inline-block;
+    margin-right: 6px;
+    font-weight: normal;
+    font-size: 11px;
+    text-decoration: none !important;
+    background: none !important;
+}
+
+.eval-links.horizontal input:hover {
+    box-shadow: none;
+    text-decoration: underline !important;
+    background: none !important;
+}
+
+.eval-links li {
+    float: left;
+    margin: 0 10px 0 0;
+}
+
+.eval-links li:first-child {
+    margin-left: 0;
+}
+
+.eval-links a {
+    color: #888;
+}
+
+.eval-links a:hover {
+    color: #000;
+}
+
+
+/* Still need genericButton here because rubric links are still genericButton
+ * Need the explicit input type as well to override that more-specific css from the theme when this page is rendered inside the course 
+*/
+
+.eval-links .genericButton,
+.eval-links .button-4,
+.eval-links input[type="button"].genericButton {
+    background: transparent;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 2px 0;
+    color: #01758C;
+    font-size: 12px;
+    font-family: 'Helvetica Neue', "Lucida Grande", sans-serif;
+    line-height: 14px;
+    vertical-align: bottom;
+    font-weight: normal;
+}
+
+
+/* Still need genericButton here because rubric links are still genericButton */
+
+.eval-links .genericButton:hover,
+.eval-links .button-4:hover {
+    color: #333;
+}
+
+
+/*END EVAL LINKS*/
+
+
+/*BEGIN GRADE TABLE*/
+
+.gradeTable {
+    font: 400 16px 'Helvetica Neue', "Lucida Grande", sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+    clear: both;
+    background-color: #F4F3F0;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+}
+
+.outof {
+    color: #676767;
+    font-size: 16px;
+    font-weight: 200;
+    margin-left: 0.1em;
+}
+
+.gradeTable tr {
+    /* 	border-left: 1px dotted rgba(0, 0, 0, 0.2); */
+    display: table-cell;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    padding-right: 12px;
+}
+
+.grade-item .gradeTable tr {
+    display: table-row;
+}
+
+.gradeTable tr td:nth-child(2) {
+    font-weight: 600;
+}
+
+.gradeTable tr:first-child {
+    border-left: 0;
+    width: 50%;
+}
+
+.gradeTable tr:nth-child(2),
+.gradeTable tr:nth-child(3) {
+    padding: 0 9px;
+}
+
+.gradeTable td {
+    text-align: left;
+    /*  width: 50%; */
+    padding: 9px 0 9px 12px;
+    /*  border: 1px solid #efefef; */
+    font-size: 100%;
+    font-weight: 200;
+    color: #666;
+    vertical-align: bottom;
+    height: 36px;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.gradeTable td.gradeCellLabel {
+    font-weight: 200;
+    color: #676767;
+    -moz-border-radius: 4px 0 0 4px;
+    -webkit-border-radius: 4px 0 0 4px;
+    border-radius: 4px 0 0 4px;
+    font-size: 100%;
+    width: 70px;
+}
+
+.gradeTable td.gradeCellGrade {
+    font-weight: 600;
+    -moz-border-radius: 0 4px 4px 0;
+    -webkit-border-radius: 0 4px 4px 0;
+    border-radius: 0 4px 4px 0;
+    color: #000000;
+    font-size: 135%;
+    font-weight: 600;
+    width: 130px;
+}
+
+.gradeTable td.horizontal {
+    width: 33%;
+}
+
+.grade-item .gradeTable td.gradeCellGrade {
+    width: 50%;
+}
+
+.grade-item .gradeTable tr td:nth-child(2),
+.grade-item .gradeTable tr td:nth-child(3) {
+    width: 100px;
+    font-weight: 600;
+    /* 	color:#000; */
+}
+
+
+/*END GRADE TABLE*/
+
+.not-graded,
+.upcoming {
+    float: left;
+    min-width: 40px;
+}
+
+.not-graded img,
+.upcoming img {
+    margin-left: 9px;
+}
+
+.gradeTable tr:nth-child(2) td,
+.gradeTable tr:nth-child(3) td {
+    padding: 0 3px 0 0;
+}
+
+
+/*BEGIN LIGHTBOX OVERRIDE STYLES*/
+
+div.lb-wrapper {
+    background-color: #fff;
+    padding: 20px;
+    -webkit-box-shadow: 0 1px 2px 1px #666666;
+    -moz-box-shadow: 0 1px 2px 1px #666666;
+    box-shadow: 0 1px 2px 1px #666666;
+}
+
+.lb-wrapper {
+    padding: 0;
+}
+
+.lb-header {
+    font-weight: bold;
+    padding: 0 !important;
+}
+
+.lb-header h2 {
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.lb-content p {
+    font: 14px/1.4 Georgia, serif;
+}
+
+
+/* Alignment lightbox */
+
+.alignPanelLightbox .alignPanel {
+    margin-bottom: 25px;
+}
+
+.alignPanelLightbox .alignHeader {
+    color: #555555;
+    font-size: 95%;
+    font-weight: bold;
+    padding: 6px 0 0;
+    text-align: left;
+}
+
+.alignPanelLightbox thead tr {
+    border-bottom: 2px solid #CCCCCC;
+    color: #999999;
+}
+
+.alignPanelLightbox .attachments td,
+.alignPanelLightbox .attachments th {
+    padding: 4px 12px;
+}
+
+.alignPanelLightbox .alignPanel table td.descriptionCell {
+    min-width: 120px;
+    word-wrap: break-word;
+}
+
+.alignPanelLightbox thead th {
+    white-space: nowrap;
+    font-size: 90%;
+    font-weight: bold;
+}
+
+.alignPanelLightbox .attachments tbody tr,
+.alignPanelLightbox .inventory-simple tbody tr {
+    border-top: 1px solid #EEEEEE;
+}
+
+.alignPanelLightbox .alignPanel table td.descriptionCell {
+    min-width: 120px;
+    word-wrap: break-word;
+    font-size: 90%;
+}
+
+.alignPanelLightbox .backLink {
+    bottom: 0;
+    margin: 0;
+    position: absolute;
+    right: 0;
+}
+
+.alignPanelLightbox .backLink a:before {
+    color: #999999;
+    content: "\2190";
+    /*left arrow*/
+    font-size: 120%;
+    line-height: 1.2;
+}
+
+.alignPanelLightbox .backLink a {
+    -moz-border-bottom-colors: none;
+    -moz-border-image: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background: none repeat scroll 0 0 #EEEEEE;
+    border-color: #CDCDCD;
+    border-style: solid;
+    border-width: 1px 0 0 1px;
+    color: #888888;
+    display: inline-block;
+    font-weight: bold;
+    padding: 8px 18px 8px 12px;
+    text-decoration: none;
+    text-shadow: 0 1px 0 #FFFFFF;
+}
+
+
+/*alignment link*/
+
+.grade_alignments {
+    padding: 2px 0;
+}
+
+
+/* END LIGHTBOX OVERRIDE STYLES*/
+
+.extra-description {
+    display: block;
+}
+
+
+/* set on the grade-item div wrapping the grade marked as the external grade for the course */
+
+.external-grade {
+    /* Doesn't do anything now, but could be used to make the course's external grade "stand out" more. */
+}
+
+
+/* Mygrades doesn't contain stream_details - just top and bottom context - and therefore wants the font 'larger'
+  in the top context to make up for the lack of detais */
+
+#left_stream_mygrades .stream_context,
+#left_stream_mygrades .active_stream_item .stream_context,
+#stream_mygrades_d .stream_context,
+#stream_mygrades_d .active_stream_item .stream_context {
+    font: normal 16px Georgia, serif;
+    clear: both;
+    color: #311D11;
+}
+
+.optionContainer {
+    background-color: gray;
+    height: 35px;
+    margin-top: 0px;
+    vertical-align: middle;
+}
+
+.optionContainer table {
+    width: 100%;
+}
+
+.optionContainer table tr td {
+    text-align: right;
+}
+
+.filtering {
+    background-color: white;
+    text-align: right;
+}
+
+.currentfilter {
+    background-color: yellow;
+    color: blue;
+}
+
+.receiptBarHorizontal {
+    background-color: #ededed;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 6;
+}
+
+.receiptBarHorizontal .count {
+    font-size: 100%;
+    line-height: 50px;
+    float: left;
+    padding-left: 30px;
+}
+
+.receiptBarHorizontal .count span,
+.receiptBarHorizontal .count img,
+.receiptBarHorizontal .count a {
+    float: left;
+}
+
+.receiptBarHorizontal .count img {
+    height: 14px;
+    padding-top: 17px;
+    margin: 0px 1px 1px 5px;
+}
+
+.receiptBarHorizontal .count a {
+    font-weight: bold;
+}
+
+
+/*Filter Styles*/
+
+.filterBarHorizontal {
+    width: 100%;
+    height: 50px;
+    background-color: #ededed;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 6;
+}
+
+.filterBarHorizontal .sorter {
+    position: absolute;
+    margin: 12px;
+    right: 15px;
+    line-height: 25px;
+    height: 25px;
+    top: 0;
+}
+
+.filterBarHorizontal .sorter label {
+    font-size: 10px;
+    color: #666;
+    display: inline-block;
+}
+
+.filterBarHorizontal .sorter select {}
+
+.filterBarHorizontal ul {
+    padding: 13px 15px;
+    width: 100%;
+}
+
+.filterBarHorizontal ul li {
+    display: inline-block;
+    height: 25px;
+    line-height: 25px;
+    margin: 0 5px;
+}
+
+.filterBarHorizontal ul li a {
+    color: #555;
+    padding: 2px 12px;
+    min-width: 50px;
+    border-radius: 2px;
+    border: 1px solid transparent;
+}
+
+.filterBarHorizontal ul li a:hover {
+    background-color: #cecece;
+    color: #000000;
+    border: 1px solid rgba(0, 0, 0, .08);
+}
+
+.filterBarHorizontal ul li a.active {
+    background-color: #ffffff;
+    color: #333;
+    border: 1px solid #CCC;
+    border: 1px solid rgba(0, 0, 0, .13);
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.pageTitle h2 {
+    display: inline-block;
+    float: right;
+    line-height: 25px;
+}
+
+
+/*MY GRADES STYLES-----------------*/
+
+.gradeTableNew {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    font-size: 12px;
+}
+
+
+/*table header*/
+
+.gradeTableNew .grades_header {
+    background: #fff;
+    height: 22px;
+    color: #888;
+    font-size: 10px;
+    text-transform: uppercase;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    font-weight: normal;
+    position: absolute;
+    border-bottom: 1px solid #ddd;
+    top: 50px;
+    z-index: 5;
+    left: 30px;
+    right: 30px;
+}
+
+
+/*table header cells*/
+
+.gradeTableNew .grades_header .cell {
+    padding: 0 10px;
+    line-height: 22px;
+    height: 22px;
+}
+
+.gradeTableNew .grades_header .cell.grade {
+    font-size: 10px;
+    text-align: right
+}
+
+.gradeTableNew .grades_header .gradeStatus {
+    /*Don't show Status Header. Hide it ax-friendly*/
+    padding: 0;
+    overflow: hidden;
+    text-indent: -999px;
+}
+
+.gradeTableNew .grades_header .cell.gradeStatus {
+    overflow: hidden;
+}
+
+
+/*grades wrapper*/
+
+.gradeTableNew #grades_wrapper {
+    margin-top: 53px;
+    float: left;
+    width: 100%;
+    overflow: hidden;
+    /* To get rid of the horizontal scroll on mybb that hides the bottom 'expand' link */
+}
+
+
+/*table body*/
+
+.gradeTableNew .row {
+    height: 60px;
+    float: left;
+    width: 100%;
+    display: block;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    border-right: 1px solid transparent;
+    border-left: 1px solid transparent;
+    margin-top: -1px;
+    position: relative;
+    color: #555;
+    overflow: hidden;
+}
+
+.gradeTableNew .row:hover {
+    background-color: #f9f9f9;
+    border-right: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+    -webkit-transition: background .2s ease;
+    -moz-transition: background .2s ease;
+    transition: background .2s ease;
+}
+
+.gradeTableNew .row:focus .expCollBtn {
+    display: block;
+}
+
+
+/*Generic Cell Styles*/
+
+.gradeTableNew .cell {
+    padding: 10px;
+    display: block;
+    float: left;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    font-size: 11px;
+    line-height: 12px;
+    overflow: hidden;
+}
+
+
+/*make ellipsis by default*/
+
+.gradeTableNew .grades_header .cell,
+.gradeTableNew .cell p,
+.gradeTableNew .cell .activityType,
+.gradeTableNew .cell .lastActivityDate,
+.gradeTableNew .cell.gradable a,
+.gradeTableNew .cell.gradable div,
+.gradeTableNew .cell.gradable span .gradeTableNew .cell.itemStats {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gradeTableNew .cell.gradeStatus {
+    width: 10%;
+    overflow: visible;
+    /*accomodate for tooltip-feature*/
+}
+
+.gradeTableNew .cell.grade {
+    width: 20%;
+}
+
+.gradeTableNew .cell.gradable {
+    width: 50%;
+}
+
+.gradeTableNew .cell.activity {
+    width: 20%;
+}
+
+
+/*Table body cells*/
+
+.gradeTableNew .row .cell.gradeStatus {
+    padding: 10px 0;
+}
+
+.gradeTableNew .row .cell.grade {
+    text-align: right;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 18px;
+}
+
+.gradeTableNew .row .cell.gradable {
+    font-weight: bold;
+}
+
+.gradeTableNew .row .cell.activity {
+    display: inline-block;
+}
+
+
+/*Calculated rows. Persist border and add a differentiating color */
+
+.gradeTableNew .calculatedRow.row {
+    border-left-color: #ddd;
+    border-right-color: #ddd;
+    -webkit-box-shadow: 0px 0px 21px 4px #e2f9fe inset;
+    -moz-box-shadow: 0px 0px 21px 4px #e2f9fe inset;
+    box-shadow: 0px 0px 21px 4px #e2f9fe inset;
+}
+
+.gradeTableNew .row .cell .vtbegenerated p,
+.gradeTableNew .row .cell a {
+    /*end the feedback with three dots*/
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 12px;
+    font-size: 11px;
+    display: inline-block;
+}
+
+.gradeTableNew .row .cell a.grade-feedback {
+    width: auto;
+    margin-right: 5px;
+    margin-left: 5px;
+    display: inline;
+}
+
+.gradeTableNew .itemDesc {
+    font-weight: normal;
+    white-space: normal;
+    text-overflow: normal;
+    color: #999;
+}
+
+.gradeTableNew .itemCat {
+    font-weight: normal;
+}
+
+.gradeTableNew .itemStats {
+    display: block;
+    text-transform: uppercase;
+    color: #999;
+    font-weight: normal;
+    font-size: 11px;
+    line-height: 12px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.gradeTableNew .itemStats div {}
+
+.gradeTableNew .itemStats .ave,
+.gradeTableNew .itemStats .med {
+    font-size: 13px;
+    font-weight: bold;
+    margin-top: 3px;
+}
+
+.gradeTableNew .itemStats .aveTitle,
+.gradeTableNew .itemStats .medTitle {
+    font-size: 10px;
+}
+
+.gradeTableNew .itemStats span {
+    clear: both;
+    display: block;
+}
+
+.gradeTableNew .row .rowLinks {
+    height: 25px;
+    font-weight: normal;
+}
+
+.gradeTableNew .row .rowLinks a {
+    display: inline-block;
+    margin-right: 15px;
+    line-height: 15px;
+}
+
+.gradeTableNew .row .rowLinks a:hover {
+    text-decoration: underline;
+}
+
+.gradeTableNew .activityType {
+    display: block;
+    line-height: 14px;
+    text-transform: uppercase;
+    color: #999;
+    font-weight: normal;
+    width: 100%;
+    overflow: hidden;
+}
+
+.gradeTableNew .lastActivityDate {
+    display: inline-block;
+    width: 100%;
+    overflow: hidden;
+}
+
+
+/*Grade Status Icons*/
+
+.gradeTableNew .cell.gradeStatus div {
+    width: 20px;
+    height: 20px;
+    margin: 0 auto;
+}
+
+.gradeTableNew .cell.gradeStatus .needsGrading {
+    background: url('/images/ci/gradebook/needs_grading.png') no-repeat right center transparent;
+}
+
+.gradeTableNew .cell.gradeStatus .graded {
+    background: url('/images/ci/gradebook/grade_completed.png') no-repeat right center transparent;
+}
+
+.gradeTableNew .cell.gradeStatus .text {}
+
+.gradeTableNew .cell.gradeStatus .inProgress {
+    background: url('/images/ci/gradebook/grading_in_progress.png') no-repeat right center transparent;
+}
+
+.gradeTableNew .cell.gradeStatus .exempt {
+    background: url('/images/ci/gradebook/exempt.png') no-repeat right center transparent;
+}
+
+.gradeTableNew .cell.grade .pointsPossible {
+    font-size: 12px;
+    line-height: 15px;
+    font-weight: normal;
+    color: #999;
+    display: block;
+    margin-left: 2px;
+}
+
+.gradeTableNew .cell.grade .anonymouslyGraded {
+    font-size: 12px;
+    line-height: 15px;
+    font-weight: normal;
+    color: #999;
+    float: right;
+    margin-top: 4px;
+}
+
+.gradeTableNew .cell.grade .grade-feedback {
+    position: relative;
+    overflow: hidden;
+    color: #00748B;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    top: -2px;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.gradeTableNew .cell.grade .grade-feedback:hover,
+.gradeTableNew .cell.grade .grade-feedback:focus {
+    color: #666666;
+}
+
+
+/* css to be used for my_grades_by_date view */
+
+.gradeCellGrade .needsGrading {
+    background: url('/images/ci/gradebook/needs_grading.png') no-repeat transparent;
+    min-width: 20px;
+    min-height: 20px;
+}
+
+.gradeCellGrade .graded {
+    background: url('/images/ci/gradebook/grade_completed.png') no-repeat transparent;
+    min-width: 20px;
+    min-height: 20px;
+}
+
+.gradeCellGrade .text {}
+
+.gradeCellGrade .inProgress {
+    background: url('/images/ci/gradebook/grading_in_progress.png') no-repeat transparent;
+    min-width: 20px;
+    min-height: 20px;
+}
+
+.gradeCellGrade .exempt {
+    background: url('/images/ci/gradebook/exempt.png') no-repeat transparent;
+    min-width: 20px;
+    min-height: 20px;
+}
+
+
+/*Expand collapse button*/
+
+.gradeTableNew .expCollBtn {
+    width: 30px;
+    height: 10px;
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    margin-left: -15px;
+    border: 1px solid #ccc;
+    z-index: 3;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    display: block;
+}
+
+.gradeTableNew .expCollBtn:hover {
+    background-color: #eee;
+}
+
+.gradeTableNew .expCollBtn:focus {
+    display: block;
+}
+
+.gradeTableNew .expCollBtn span {
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #000;
+    display: block;
+    margin: 3px 0 0 11px;
+}
+
+.gradeTableNew .expCollBtn.arrowUp {
+    border: 1px solid transparent;
+}
+
+.gradeTableNew .expCollBtn.arrowUp:hover {
+    border: 1px solid #ddd;
+}
+
+.gradeTableNew .expCollBtn.arrowUp span {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 5px solid #000;
+    border-top: none;
+    display: block;
+    margin-top: 2px;
+}
+
+.gradeTableNew .row:hover .expCollBtn {
+    display: block;
+}
+
+
+/*Expanded Styles--------*/
+
+.gradeTableNew .row.expanded {
+    /*Display the all contents of a row on hover*/
+    overflow: visible;
+    height: auto;
+    cursor: default;
+}
+
+.gradeTableNew .row.expanded .cell {
+    white-space: normal;
+    text-overflow: clip;
+}
+
+.gradeTableNew .row .itemDesc,
+.gradeTableNew .row .itemDesc .vtbegenerated {
+    display: none;
+}
+
+.gradeTableNew .row .rowLinks,
+.gradeTableNew .row .itemStats,
+.gradeTableNew .row .rowLinks .eval-links {
+    filter: alpha(opacity=0);
+    opacity: 0;
+}
+
+.gradeTableNew .row.expanded .itemDesc,
+.gradeTableNew .row.expanded .itemDesc .vtbegenerated {
+    display: block;
+}
+
+.gradeTableNew .row:hover .rowLinks,
+.gradeTableNew .row:hover .expCollBtn,
+.gradeTableNew .row:hover .rowLinks .eval-links,
+.gradeTableNew .row.simHover .rowLinks,
+.gradeTableNew .row.simHover .expCollBtn,
+.gradeTableNew .row.simHover .rowLinks .eval-links,
+.gradeTableNew .row.expanded .itemStats,
+.gradeTableNew .row.expanded .rowLinks,
+.gradeTableNew .row.expanded .rowLinks .eval-links,
+.gradeTableNew .row.expanded .expCollBtn {
+    filter: alpha(opacity=100);
+    opacity: 1;
+}
+
+
+/* When VTBEs are used for column descriptions, remove the exaggerated bottom margin on the mygrades page */
+
+.gradeTableNew .row .itemDesc .vtbegenerated p {
+    margin-bottom: auto;
+}
+
+.gradeTableNew .row.expanded .attachment {
+    /*show attachment link properly*/
+    display: block;
+    background: url('../images/attachment.png') no-repeat center left;
+    padding-left: 20px;
+    margin-left: -20px;
+    position: static;
+    overflow: auto;
+    text-indent: 0;
+    margin-top: 5px;
+    width: auto;
+}
+
+.gradeTableNew .row.expanded .rowLinks {
+    margin-top: 10px;
+}
+
+
+/*remove ellipsis when expanded */
+
+.gradeTableNew .row.expanded .cell p,
+.gradeTableNew .row.expanded .activityType,
+.gradeTableNew .row.expanded .cell .lastActivityDate,
+.gradeTableNew .row.expanded .cell.gradable a,
+.gradeTableNew .row.expanded .cell.gradable div,
+.gradeTableNew .row.expanded .cell.gradable span {
+    text-overflow: clip;
+    white-space: normal;
+}
+
+
+/*My Grades Styles when viewed in Mybb (Style Overrides)*/
+
+.mybb.filterBarHorizontal {
+    font-size: 12px;
+    font-family: 'Helvetica Neue', "Lucida Grande", sans-serif;
+}
+
+.mybb.filterBarHorizontal ul {
+    padding: 17px 0 0 10px;
+}
+
+.mybb.filterBarHorizontal ul li {
+    margin: 0;
+}
+
+.mybb.filterBarHorizontal ul li a {
+    padding: 2px 6px;
+}
+
+.mybb.filterBarHorizontal .sorter label {
+    display: block;
+    line-height: 10px;
+    text-align: left;
+    margin-top: -4px;
+    margin-left: 7px;
+}
+
+.mybb.gradeTableNew .row .cell {
+    font-family: 'Helvetica Neue', "Lucida Grande", sans-serif;
+}
+
+.mybb.gradeTableNew .grades_header {
+    left: 0;
+    right: 0;
+    -webkit-box-shadow: 0 4px 12px -4px rgba(0, 0, 0, .4);
+    -moz-box-shadow: 0 4px 12px -4px rgba(0, 0, 0, .4);
+    box-shadow: 0 4px 12px -4px rgba(0, 0, 0, .4);
+}
+
+.mybb.gradeTableNew #grades_wrapper {
+    margin-top: 90px;
+}
+
+.mybb.gradeTableNew .cell.grade .pointsPossible {
+    /*wrap the points possible below the grade*/
+    display: block;
+    float: none;
+    margin-top: 0;
+}
+
+#streamDetail .receiptBarHorizontal {
+    position: fixed;
+    bottom: 36px;
+    left: 0px;
+}
+
+@media only screen and (min-width:0px) and (max-width:480px) {
+    .pageTitle {
+        padding: 10px 0px 0px 20px;
+    }
+    .gradeTableNew #grades_wrapper {
+        overflow: visible;
+    }
+    .filterBarHorizontal {
+        float: left;
+        height: 157px;
+    }
+    .filterBarHorizontal ul li {
+        float: left;
+        clear: both;
+        margin-bottom: 7px;
+    }
+    .gradeTableNew {
+        float: left;
+        margin-top: 115px;
+    }
+    .submitted_item_row {
+        margin-bottom: 10px;
+        box-shadow: 1px 1px 10px 0 rgba(0, 0, 0, 0.14);
+        border-right: 1px solid #ddd !important;
+        border-left: 1px solid #ddd !important;
+    }
+    .gradeTableNew .cell.gradable {
+        width: 100%;
+    }
+    .gradeTableNew .cell.gradable a {
+        cursor: pointer;
+    }
+    .gradeTableNew .cell.gradable:first-of-type {
+        border-bottom: 1px solid #ddd;
+    }
+    .cell.activity.timestamp {
+        width: 50%;
+    }
+    .filterBarHorizontal ul {
+        width: 50%;
+    }
+    .tooltipContainer-left .tooltip {
+        right: -30px;
+        top: 20px;
+    }
+}
