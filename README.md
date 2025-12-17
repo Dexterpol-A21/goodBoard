@@ -1,69 +1,81 @@
-# GoodBoard 🎓
+# GoodBoard
 
-**Tu Blackboard, pero bien hecho.**
+**Your Blackboard, but better.**
 
-GoodBoard es una extensión para Google Chrome diseñada para mejorar significativamente la experiencia de usuario en la plataforma Blackboard (específicamente optimizada para UVM). Transforma la interfaz anticuada en un dashboard moderno, intuitivo y lleno de funcionalidades útiles.
+This Chrome extension simplifies Blackboard navigation, focusing on the UVM portal. It offers a cleaner and more organized alternative to the traditional interface, presenting a simple dashboard. It gathers important information, such as assignments, grades, and announcements, in one place, helping to manage academic activities efficiently.
 
-## ✨ Características Principales
+## Key Features
 
-- **Dashboard Moderno**: Una interfaz limpia y amigable construida con React.
-- **Visualización de Datos**: Gráficos interactivos (usando Recharts) para visualizar tu rendimiento académico y distribución de calificaciones.
-- **Gestión de Tareas**: Organiza tus entregas y pendientes de manera eficiente.
-- **Integración Perfecta**: Se inyecta directamente en Blackboard para una experiencia fluida.
+- **Modern Dashboard**: A clean and friendly interface built with React.
+- **Data Visualization**: Interactive charts (using Recharts) to visualize academic performance and grade distribution.
+- **Kanban Board**: Organize tasks and submissions in customizable columns (To Do, In Progress, Done) with drag-and-drop functionality.
+- **Gantt Chart**: Visualize submissions on a timeline to better plan the semester.
+- **Task Management**: Organize submissions and pending items efficiently.
+- **Seamless Integration**: Injects directly into Blackboard for a smooth experience.
 
-## 🛠️ Tecnologías Utilizadas
+## How Scraping Works
 
-Este proyecto está construido con tecnologías web modernas:
+GoodBoard works by injecting a content script (`content.js`) directly into Blackboard pages. This script performs the following actions:
 
-- **[React](https://reactjs.org/)**: Biblioteca para construir interfaces de usuario.
-- **[Vite](https://vitejs.dev/)**: Entorno de desarrollo rápido.
-- **[Tailwind CSS](https://tailwindcss.com/)**: Framework de CSS para un diseño rápido y responsivo.
-- **[Recharts](https://recharts.org/)**: Biblioteca de gráficos para React.
-- **[Chrome Extension Manifest V3](https://developer.chrome.com/docs/extensions/mv3/)**: El estándar más reciente para extensiones de Chrome.
+1.  **DOM Analysis**: Uses specific selectors to locate HTML elements containing relevant information (course names, grades, due dates, etc.).
+2.  **Data Extraction**: Iterates over these elements to extract text and necessary attributes, cleaning and formatting the information.
+3.  **Local Storage**: Saves extracted data to `chrome.storage.local` so it can be accessed by the React interface.
+4.  **Real-time Update**: Detects page changes to keep information updated without manual reloading.
 
-## 🚀 Instalación y Desarrollo
+## Technologies Used
 
-### Prerrequisitos
+This project is built with modern web technologies:
 
-- Node.js (versión 16 o superior recomendada)
+- **[React](https://reactjs.org/)**: Library for building user interfaces.
+- **[Vite](https://vitejs.dev/)**: Fast development environment.
+- **[Tailwind CSS](https://tailwindcss.com/)**: CSS framework for rapid and responsive design.
+- **[Recharts](https://recharts.org/)**: Charting library for React.
+- **[dnd-kit](https://dndkit.com/)**: Library for drag-and-drop functionality in the Kanban board.
+- **[Chrome Extension Manifest V3](https://developer.chrome.com/docs/extensions/mv3/)**: The latest standard for Chrome extensions.
+
+## Installation and Development
+
+### Prerequisites
+
+- Node.js (version 16 or higher recommended)
 - npm
 
-### Configuración del Proyecto
+### Project Setup
 
-1.  Clona el repositorio:
+1.  Clone the repository:
     ```bash
     git clone https://github.com/Dexterpol-A21/goodBoard.git
     cd goodBoard
     ```
 
-2.  Instala las dependencias:
+2.  Install dependencies:
     ```bash
     npm install
     ```
 
-3.  Construye el proyecto:
+3.  Build the project:
     ```bash
     npm run build
     ```
 
-### Cargar en Chrome (Modo Desarrollador)
+### Load in Chrome (Developer Mode)
 
-1.  Abre Google Chrome y ve a `chrome://extensions/`.
-2.  Activa el **"Modo de desarrollador"** en la esquina superior derecha.
-3.  Haz clic en **"Cargar descomprimida"**.
-4.  Selecciona la carpeta `dist` generada en el paso de construcción.
+1.  Open Google Chrome and go to `chrome://extensions/`.
+2.  Enable **"Developer mode"** in the top right corner.
+3.  Click on **"Load unpacked"**.
+4.  Select the `dist` folder generated in the build step.
 
-¡Listo! La extensión debería estar activa cuando visites Blackboard.
+Done! The extension should be active when you visit Blackboard.
 
-## 🤝 Contribución
+## Contribution
 
-Las contribuciones son bienvenidas. Por favor, abre un issue o un pull request para sugerir cambios o mejoras.
+Contributions are welcome. Please open an issue or pull request to suggest changes or improvements.
 
-## 👤 Autor
+## Author
 
 **Dexterpol-A21**
 - GitHub: [@Dexterpol-A21](https://github.com/Dexterpol-A21)
 - Portfolio: [dexterpol-a21.github.io](https://dexterpol-a21.github.io)
 
 ---
-*Este proyecto no está afiliado oficialmente con Blackboard ni UVM.*
+*This project is not officially affiliated with Blackboard or UVM.*
