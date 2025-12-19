@@ -89,8 +89,8 @@ export default function OverallPerformanceChart({ grades = [], onCourseClick }) 
         </div>
       </div>
       
-      <div className="h-[350px] w-full min-w-0">
-        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+      <div className="h-[350px] w-full min-w-0" style={{ minHeight: '350px' }}>
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={350}>
           {activeTab === 'barras' && (
             <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 60 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />

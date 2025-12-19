@@ -55,8 +55,8 @@ export default function DistributionChart({ grades = [], accumulatedPoints }) {
             <span className="material-symbols-outlined text-primary">pie_chart</span>
             Distribución
         </h3>
-        <div className="flex-1 min-h-0">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+        <div className="flex-1 min-h-0" style={{ minHeight: '200px' }}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200}>
                 <PieChart>
                     <Pie
                         data={pieData}

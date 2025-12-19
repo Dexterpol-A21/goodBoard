@@ -445,8 +445,17 @@ async function scrapeGrades() {
   }
   
   if (grades.length > 0) {
-      chrome.storage.local.set({ 'goodBoardGrades': grades, 'lastSyncGrades': Date.now() });
-      console.log("Global Grades saved:", grades);
+      chrome.storage.local.get(['goodBoardGrades'], (result) => {
+          const existing = result.goodBoardGrades || [];
+          const gradeMap = new Map();
+          
+          existing.forEach(g => gradeMap.set(g.course, g));
+          grades.forEach(g => gradeMap.set(g.course, g));
+          
+          const merged = Array.from(gradeMap.values());
+          chrome.storage.local.set({ 'goodBoardGrades': merged, 'lastSyncGrades': Date.now() });
+          console.log("Global Grades saved (merged):", merged.length);
+      });
   }
 
   if (assignments.length > 0) {
@@ -629,8 +638,26 @@ function scrapeCourses() {
     });
 
     if (courses.length > 0) {
-        chrome.storage.local.set({ 'goodBoardCourses': courses, 'lastSyncCourses': Date.now() });
-        console.log("Courses saved:", courses);
+        chrome.storage.local.get(['goodBoardCourses'], (result) => {
+            const existing = result.goodBoardCourses || [];
+            const courseMap = new Map();
+            
+            // Index existing courses
+            existing.forEach(c => {
+                const key = c.internalId || c.id || c.name;
+                if (key) courseMap.set(key, c);
+            });
+
+            // Merge new courses
+            courses.forEach(c => {
+                const key = c.internalId || c.id || c.name;
+                if (key) courseMap.set(key, c);
+            });
+
+            const merged = Array.from(courseMap.values());
+            chrome.storage.local.set({ 'goodBoardCourses': merged, 'lastSyncCourses': Date.now() });
+            console.log("Courses saved (merged):", merged.length);
+        });
     }
     return courses;
 }
@@ -659,12 +686,20 @@ function router() {
         // Update tasks if on calendar page. Avoid clearing if loading.
         const calendarContainer = document.querySelector('.fc-view-container') || document.querySelector('.fc-view');
         if (calendarContainer) {
-             const rawEvents = document.querySelectorAll('.fc-event');
-             if (tasks.length > 0 || rawEvents.length === 0) {
-                 chrome.storage.local.set({ 'goodBoardTasks': tasks, 'lastSyncTasks': Date.now() });
-                 console.log("Tasks synced:", tasks.length);
+             if (tasks.length > 0) {
+                 chrome.storage.local.get(['goodBoardTasks'], (result) => {
+                     const existing = result.goodBoardTasks || [];
+                     const taskMap = new Map();
+                     
+                     existing.forEach(t => taskMap.set(t.id, t));
+                     tasks.forEach(t => taskMap.set(t.id, t));
+                     
+                     const merged = Array.from(taskMap.values());
+                     chrome.storage.local.set({ 'goodBoardTasks': merged, 'lastSyncTasks': Date.now() });
+                     console.log(`Tasks synced: ${tasks.length} new. Total: ${merged.length}`);
+                 });
              } else {
-                 console.warn("GoodBoard: Found events in DOM but scraped 0 tasks. Not clearing storage.");
+                 console.warn("GoodBoard: Scraped 0 tasks. Not clearing storage to prevent data loss.");
              }
         }
     } else if (url.includes('grades')) {

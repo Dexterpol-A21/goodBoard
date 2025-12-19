@@ -302,8 +302,8 @@ export default function CourseCharts({ grades = [], totalWeight, accumulatedPoin
                 ))}
             </div>
 
-            <div className="flex-1 min-h-0">
-                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+            <div className="flex-1 min-h-0" style={{ minHeight: '400px' }}>
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={400}>
                     {activeTab === 'barras' && (
                         <BarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                             <defs>

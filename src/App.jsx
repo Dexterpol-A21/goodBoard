@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { DndContext, closestCorners, KeyboardSensor, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core'
+import { DndContext, closestCorners, KeyboardSensor, PointerSensor, useSensor, useSensors, DragOverlay, pointerWithin, rectIntersection, getFirstCollision } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import CourseCharts from './components/CourseCharts'
@@ -731,10 +731,10 @@ function App() {
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background-dark text-white font-display relative">
+    <div className="flex min-h-screen w-full bg-background-dark text-white font-display relative">
       {/* Sidebar */}
       {isSidebarOpen && (
-      <aside className="hidden md:flex flex-col w-64 h-full border-r border-border-dark bg-background-dark p-4 justify-between shrink-0 z-20">
+      <aside className="hidden md:flex flex-col w-64 h-screen sticky top-0 border-r border-border-dark bg-background-dark p-4 justify-between shrink-0 z-20">
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-3 px-2">
             <img src="/logo/goodBoardIcon.png" alt="GoodBoard" className="h-8 w-auto" />
@@ -804,7 +804,7 @@ function App() {
       </button>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden relative bg-background-dark">
+      <main className="flex-1 flex flex-col relative bg-background-dark">
         {renderContent()}
       </main>
 
@@ -1622,15 +1622,83 @@ const KanbanView = ({ tasks, setTasks, columns, setColumns, onNewTask, onEditCol
     })
   );
 
+  // Custom collision detection strategy
+  const collisionDetectionStrategy = (args) => {
+      const pointerIntersections = pointerWithin(args);
+      
+      if (pointerIntersections.length > 0) {
+          return pointerIntersections;
+      }
+
+      return closestCorners(args);
+  };
+
   const [activeId, setActiveId] = useState(null);
 
   const handleDragStart = (event) => {
     setActiveId(event.active.id);
   };
 
+  const handleDragOver = (event) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeId = active.id;
+    const overId = over.id;
+
+    if (activeId === overId) return;
+
+    // We need to determine if we are over a task or a column
+    // We can't rely solely on closure state for the update logic, 
+    // but we need it to decide which branch to take.
+    const isOverColumn = columns.some(c => c.id === overId);
+    const isOverTask = tasks.some(t => t.id === overId);
+
+    if (!isOverColumn && !isOverTask) return;
+
+    setTasks((prev) => {
+        const activeIndex = prev.findIndex((t) => t.id === activeId);
+        const overIndex = prev.findIndex((t) => t.id === overId);
+        
+        if (activeIndex === -1) return prev;
+
+        const activeTask = prev[activeIndex];
+        const newTasks = [...prev];
+
+        if (isOverTask) {
+            if (overIndex === -1) return prev;
+            const overTask = prev[overIndex];
+
+            // If status is different, update it
+            if (activeTask.status !== overTask.status) {
+                newTasks[activeIndex] = { ...activeTask, status: overTask.status };
+                return arrayMove(newTasks, activeIndex, overIndex);
+            } 
+            
+            // If status is same, just reorder
+            return arrayMove(newTasks, activeIndex, overIndex);
+        } 
+        
+        if (isOverColumn) {
+            // If over a column, update status if needed
+            if (activeTask.status !== overId) {
+                newTasks[activeIndex] = { ...activeTask, status: overId };
+                // When moving to a column, we don't necessarily need to reorder 
+                // unless we want to move it to the end/start. 
+                // arrayMove(..., activeIndex, activeIndex) keeps it in place in the array
+                // but effectively moves it to the new column visually.
+                return arrayMove(newTasks, activeIndex, activeIndex);
+            }
+        }
+
+        return prev;
+    });
+  };
+
   const handleDragEnd = (event) => {
     const { active, over } = event;
-    
+    setActiveId(null);
+
     if (!over) return;
 
     const activeId = active.id;
@@ -1644,37 +1712,7 @@ const KanbanView = ({ tasks, setTasks, columns, setColumns, onNewTask, onEditCol
         if (activeColumnIndex !== overColumnIndex) {
             setColumns(arrayMove(columns, activeColumnIndex, overColumnIndex));
         }
-        setActiveId(null);
-        return;
     }
-
-    // Task dragging logic
-    const activeTask = tasks.find(t => t.id === activeId);
-    if (!activeTask) {
-        setActiveId(null);
-        return;
-    }
-    
-    // Check if dropped on a column
-    const isOverColumn = columns.some(col => col.id === overId);
-    
-    let newStatus = activeTask.status;
-
-    if (isOverColumn) {
-       newStatus = overId;
-    } else {
-       // Dropped on another task
-       const overTask = tasks.find(t => t.id === overId);
-       if (overTask) {
-         newStatus = overTask.status;
-       }
-    }
-
-    if (activeTask.status !== newStatus) {
-       setTasks(tasks.map(t => t.id === activeId ? { ...t, status: newStatus } : t));
-    }
-    
-    setActiveId(null);
   };
 
   const addColumn = () => {
@@ -1726,8 +1764,9 @@ const KanbanView = ({ tasks, setTasks, columns, setColumns, onNewTask, onEditCol
       <div className="flex-1 overflow-x-auto overflow-y-hidden px-6 pb-6 w-full pt-6">
         <DndContext 
           sensors={sensors} 
-          collisionDetection={closestCorners} 
+          collisionDetection={collisionDetectionStrategy} 
           onDragStart={handleDragStart} 
+          onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
         >
           <SortableContext items={columns.map(c => c.id)} strategy={horizontalListSortingStrategy}>
@@ -2168,8 +2207,8 @@ const CalendarView = ({ tasks, columns, onEditTask, onUpdateTask }) => {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-background-dark">
-      <header className="flex-none px-6 py-6 md:px-10 md:py-8 border-b border-border-dark bg-background-dark/95 backdrop-blur z-10 sticky top-0">
+    <div className="flex-1 flex flex-col min-h-screen bg-background-dark">
+      <header className="flex-none px-6 py-6 md:px-10 md:py-8 border-b border-border-dark bg-background-dark/95 backdrop-blur z-30 sticky top-0">
         <div className="w-full flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div className="flex flex-col gap-2">
                 <h1 className="text-3xl md:text-4xl font-black text-white leading-tight tracking-tight">Cronograma Gantt</h1>
@@ -2214,11 +2253,11 @@ const CalendarView = ({ tasks, columns, onEditTask, onUpdateTask }) => {
             </div>
         </div>
       </header>
-      <div className="flex-1 overflow-hidden p-8">
+      <div className="flex-1 flex flex-col p-8">
 
-      <div className="flex-1 flex flex-col overflow-hidden border border-border-dark rounded-xl bg-surface-dark">
+      <div className="flex flex-col border border-border-dark rounded-xl bg-surface-dark">
           {/* Header Days */}
-          <div className="flex border-b border-border-dark sticky top-0 bg-surface-dark z-20 h-12 shrink-0">
+          <div className="flex border-b border-border-dark sticky top-[130px] bg-surface-dark z-20 h-12 shrink-0">
             <div className="flex-1 relative">
               {Array.from({ length: daysToShow }).map((_, i) => {
                 const d = new Date(viewStartDate);
@@ -2234,9 +2273,9 @@ const CalendarView = ({ tasks, columns, onEditTask, onUpdateTask }) => {
           </div>
 
           {/* Body */}
-          <div className="relative flex-1 overflow-y-auto">
+          <div className="relative flex flex-col">
             {/* Grid Lines (Background) */}
-            <div className="absolute inset-0 flex pointer-events-none h-full">
+            <div className="absolute inset-0 flex pointer-events-none z-0">
                <div className="flex-1 relative h-full" ref={containerRef}>
                  {Array.from({ length: daysToShow }).map((_, i) => (
                    <div key={i} className="absolute top-0 bottom-0 border-l border-border-dark/30" style={{ left: `${(i / daysToShow) * 100}%` }}></div>
@@ -2251,7 +2290,7 @@ const CalendarView = ({ tasks, columns, onEditTask, onUpdateTask }) => {
             </div>
 
             {/* Tasks Rows */}
-            <div className="relative z-10">
+            <div className="relative z-10 flex-1">
               {processedTasks.map((task, idx) => {
                 const startPos = getPosition(task.start);
                 const endPos = getPosition(task.end);
@@ -2315,7 +2354,7 @@ const CalendarView = ({ tasks, columns, onEditTask, onUpdateTask }) => {
           </div>
           
           {/* Unscheduled Tasks Area */}
-          <div className="h-48 border-t border-border-dark bg-surface-dark/50 p-4 overflow-y-auto shrink-0 z-30">
+          <div className="border-t border-border-dark bg-surface-dark/50 p-4 shrink-0 z-30">
             <h3 className="text-text-secondary font-bold text-sm mb-3 uppercase tracking-wider flex items-center gap-2">
                 <span className="material-symbols-outlined text-sm">inbox</span>
                 Actividades Pendientes (Arrastra al calendario)
