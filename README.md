@@ -2,7 +2,7 @@
 
 **Your Blackboard, but better.**
 
-This Chrome extension simplifies Blackboard navigation, focusing on the UVM portal. It offers a cleaner and more organized alternative to the traditional interface, presenting a simple dashboard. It gathers important information, such as assignments, grades, and announcements, in one place, helping to manage academic activities efficiently.
+GoodBoard transforms the legacy Blackboard experience into a modern, high-performance productivity hub for UVM students. Built with React and Vite, it launches a dedicated Dashboard page featuring a drag-and-drop Kanban board for assignment tracking, interactive Gantt charts for timeline visualization, and real-time grade analytics. It empowers students with advanced data visualization tools, including dynamic charts for grade distribution and progress tracking.
 
 ## Key Features
 
