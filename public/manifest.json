@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "GoodBoard",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Tu Blackboard, pero bien hecho.",
   "icons": {
     "16": "logo/icon16.png",
